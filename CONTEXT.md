@@ -93,15 +93,16 @@ companion watch app that records sessions in the gym.
 - [0023](docs/adr/0023-plan-json-template-only.md) — Plan JSON is template-only; logs travel as CSV.
 - [0024](docs/adr/0024-saved-workouts-immutable.md) — Saved workouts are fully immutable.
 - [0025](docs/adr/0025-cancel-discards.md) — Cancel discards an in-progress workout.
+- [0026](docs/adr/0026-exact-version-files.md) — Exported files must match the exact schema version; ship templates for AI-assisted conversion.
+- [0027](docs/adr/0027-csv-columns.md) — CSV columns: full summary + packed `details` JSON per Workout.
+- [0028](docs/adr/0028-sync-transport.md) — Sync uses durable background transfers + a pending/Retry UI.
+- [0029](docs/adr/0029-one-watch-per-phone.md) — One matching watch per phone; no cross-platform pairing.
+- [0030](docs/adr/0030-archive-exercises.md) — Exercises are archived, never hard-deleted.
+- [0031](docs/adr/0031-phone-tabs.md) — Phone shell is four bottom tabs: Home, Plans, History, Settings.
+- [0032](docs/adr/0032-superset-authoring.md) — Superset authoring: chain container, with grouping as a shortcut.
+- [0033](docs/adr/0033-watch-superset-cycling.md) — Watch superset cycling: per-member screen with a round header.
+- [0034](docs/adr/0034-rest-timer-and-haptics.md) — Watch rest timer: countdown with skip/+30s, haptics, fires screen-off.
 
-## Deferred / not yet specified
+## Out of scope
 
-- Exact CSV summary column set.
-- Superset authoring UI and the watch's within-superset cycling visuals.
-- Rest/timer screen behaviour and notification haptics.
-- Plan switcher / top-level phone navigation details.
-- Deleting a globally-referenced Exercise (safe for history by snapshot, but UX to be decided).
-- Schema versioning + migration policy for exported files.
-- Native sync transport specifics (WatchConnectivity vs Wearable Data Layer) and failure UX.
-- Whether one phone can pair with both an OS watch and a Wear watch.
-- Cloud sync / accounts — deliberately out of scope; the app is local-only for now.
+- Cloud sync / accounts — the app is local-only; no server, no accounts.
