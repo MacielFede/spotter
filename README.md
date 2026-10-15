@@ -43,17 +43,66 @@ pnpm build          # build every workspace package that defines a build
 pnpm codegen        # regenerate JSON Schema + Swift/Kotlin from Zod
 ```
 
-CI (`pnpm codegen` + `git diff --exit-code`) fails if committed generated
-artifacts drift from the Zod sources.
+## Generated artifacts
 
-## Building each app
+`pnpm codegen` regenerates every artifact under [`packages/domain/gen/`](packages/domain/gen/)
+from the Zod sources; they are committed and **never hand-edited** (ADR 0045). CI
+regenerates and fails the build if committed output drifts, and the emit tests in
+`packages/codegen` compare fresh emission against the committed files, so `pnpm test`
+catches drift locally too.
 
-- **phone** — Expo dev-client. Not scaffolded yet (issue #4); will run with
-  `pnpm --filter phone start` once it exists.
-- **watchos** — Xcode project under `apps/watchos`. Not scaffolded yet (issue #5);
-  will build with `xcodebuild` / Xcode.
-- **wearos** — Gradle project under `apps/wearos`. Not scaffolded yet (issue #6);
-  will build with `./gradlew :app:assembleDebug`.
+## Running each app
+
+One matching watch per phone, same platform only (ADR 0029): iPhone ↔ Apple Watch,
+Android phone ↔ Wear OS watch.
+
+| App | Status | Run it |
+| --- | --- | --- |
+| **phone** (Expo + React Native, dev-client) | Not scaffolded yet — issue #4 | `pnpm --filter phone start` (Metro); on-device dev build: `pnpm --filter phone run:ios --device` / `run:android --device` |
+| **watchos** (Swift, GRDB) | Not scaffolded yet — issue #5 | `open apps/watchos/Spotter.xcodeproj`, pick your Watch as the run destination in Xcode (⌘R) |
+| **wearos** (Kotlin + Compose, Room) | Not scaffolded yet — issue #6 | `apps/wearos/./gradlew :app:installDebug` (installs on the connected watch/emulator) |
+
+Each scaffold issue also wires a build from the repository root (`pnpm build` covers
+every package that defines a build).
+
+## Connecting phone ↔ watch
+
+1. **Pair at the OS level** — nothing app-side can do this for you:
+   - Apple Watch: pair from the **Watch** app on the iPhone (Watch → Pair New Watch),
+     and let it install apps automatically or via the Watch app's *My Watch → Available
+     Apps*.
+   - Wear OS: pair from the **Wear OS by Google** companion app on the phone.
+2. **App-level sync** (once implemented — issues #39–#47, #55–#56, #65–#66):
+   - Phone → Watch (definitions): a **manual sync button in Settings** pushes the
+     Current Plan + its active Routines + referenced Exercises (ADR 0005, ADR 0011).
+   - Watch → Phone (finished workouts): **automatic on finish**, durable outbox with
+     retry (ADR 0005, ADR 0028).
+   - There is no cloud, no account, and no continuous channel — each app fetches the
+     companion's status on focus, and the active-workout draft pushes on change
+     (ADR 0007, ADR 0038).
+
+## Installing on your devices (and keeping it installed)
+
+Spotter is local-first with **no cloud backup** (ADR 0047) — export/import is the backup
+story. To have the apps permanently on your devices:
+
+- **iPhone** — build the Expo dev-client once against your device:
+  `pnpm --filter phone run:ios --device` (sign with your free/personal team in Xcode;
+  with a free team, re-sign roughly every 7 days, or use a paid team to keep it
+  installed indefinitely).
+- **Apple Watch** — with the Watch paired, Xcode lists it as a run destination: open
+  `apps/watchos/Spotter.xcodeproj`, select your Watch, ⌘R (or
+  `xcodebuild -destination 'platform=watchOS,name=<Your Watch>' ...`). Installing via
+  the iPhone also pushes it to the Watch (watchOS apps install through the paired phone).
+- **Android phone** — enable Developer options + USB debugging, then
+  `pnpm --filter phone run:android --device` (or `adb install` the built APK).
+- **Wear OS watch** — pair it, then either run from Android Studio with the Watch as
+  the deployment target, or `adb -s <watch-serial> install app-debug.apk`
+  (`apps/wearos/app/build/outputs/apk/debug/`). Over Wi-Fi/Bluetooth:
+  `adb pair` / `adb connect` to the Watch's Developer options wireless-debugging address.
+
+After that, day-to-day use needs no computer: the apps stay installed; syncing is
+phone ↔ watch over the OS transport; backups are export/import files you own.
 
 ## Schema-first invariant
 
