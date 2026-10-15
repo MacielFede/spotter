@@ -52,12 +52,15 @@ describe('JSON Schema emission (issue #7 acceptance: emits cleanly)', () => {
     expect(exercise.additionalProperties).toBe(false);
     expect(exercise.required).toContain('archived');
 
-    const moduleKind = z.toJSONSchema(ModuleKindSchema);
-    expect(moduleKind.enum).toEqual(['warmup', 'stretching', 'core', 'cardio']);
+    const moduleKind = z.toJSONSchema(ModuleKindSchema) as unknown as {
+      $defs: { ModuleKind: { enum?: string[] } };
+    };
+    expect(moduleKind.$defs.ModuleKind?.enum).toEqual(['warmup', 'stretching', 'core', 'cardio']);
 
-    const supersetItem = z.toJSONSchema(SupersetItemSchema);
-    const members = supersetItem.properties?.members as { minItems?: number } | undefined;
-    expect(members?.minItems).toBe(2);
+    const supersetItem = z.toJSONSchema(SupersetItemSchema) as unknown as {
+      $defs: { SupersetItem: { properties: { members: { minItems?: number } } } };
+    };
+    expect(supersetItem.$defs.SupersetItem?.properties.members.minItems).toBe(2);
 
     const serializedSet = JSON.stringify(z.toJSONSchema(SetSchema));
     expect(serializedSet).toContain('"const":"reps"');

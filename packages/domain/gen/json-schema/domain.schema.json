@@ -1,0 +1,814 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "exercise": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "archived"
+      ],
+      "additionalProperties": false
+    },
+    "plan": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "routines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Routine"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "routines"
+      ],
+      "additionalProperties": false
+    },
+    "workout": {
+      "type": "object",
+      "properties": {
+        "workoutId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        },
+        "planId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        },
+        "planName": {
+          "type": "string"
+        },
+        "routineId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        },
+        "routineName": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+        },
+        "endedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+        },
+        "startedOn": {
+          "type": "string",
+          "enum": [
+            "phone",
+            "watch"
+          ]
+        },
+        "exercises": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WorkoutEntry"
+          }
+        }
+      },
+      "required": [
+        "workoutId",
+        "planId",
+        "planName",
+        "routineId",
+        "routineName",
+        "startedAt",
+        "endedAt",
+        "startedOn",
+        "exercises"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "exercise",
+    "plan",
+    "workout"
+  ],
+  "additionalProperties": false,
+  "title": "Domain",
+  "$defs": {
+    "Routine": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "modules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Module"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "active",
+        "modules"
+      ],
+      "additionalProperties": false,
+      "title": "Routine"
+    },
+    "Module": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/ModuleKind"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Item"
+          }
+        }
+      },
+      "required": [
+        "kind",
+        "enabled",
+        "items"
+      ],
+      "additionalProperties": false,
+      "title": "Module"
+    },
+    "ModuleKind": {
+      "type": "string",
+      "enum": [
+        "warmup",
+        "stretching",
+        "core",
+        "cardio"
+      ],
+      "title": "ModuleKind"
+    },
+    "Item": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ExerciseItem"
+        },
+        {
+          "$ref": "#/$defs/SupersetItem"
+        }
+      ],
+      "title": "Item"
+    },
+    "ExerciseItem": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "exercise"
+        },
+        "exerciseId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        },
+        "sets": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Set"
+          }
+        }
+      },
+      "required": [
+        "kind",
+        "exerciseId",
+        "sets"
+      ],
+      "additionalProperties": false,
+      "title": "ExerciseItem"
+    },
+    "Set": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "reps"
+            },
+            "targetReps": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "weightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "restSeconds": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "targetReps",
+            "weightKg",
+            "restSeconds"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "time"
+            },
+            "targetSeconds": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "weightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "restSeconds": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "targetSeconds",
+            "weightKg",
+            "restSeconds"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "title": "Set"
+    },
+    "SupersetItem": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "superset"
+        },
+        "members": {
+          "minItems": 2,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SupersetMember"
+          }
+        },
+        "rounds": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "restSeconds": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "members",
+        "rounds",
+        "restSeconds"
+      ],
+      "additionalProperties": false,
+      "title": "SupersetItem"
+    },
+    "SupersetMember": {
+      "type": "object",
+      "properties": {
+        "exerciseId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        },
+        "set": {
+          "$ref": "#/$defs/SupersetMemberSet"
+        }
+      },
+      "required": [
+        "exerciseId",
+        "set"
+      ],
+      "additionalProperties": false,
+      "title": "SupersetMember"
+    },
+    "SupersetMemberSet": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "reps"
+            },
+            "targetReps": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "weightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "targetReps",
+            "weightKg"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "time"
+            },
+            "targetSeconds": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "weightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "targetSeconds",
+            "weightKg"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "title": "SupersetMemberSet"
+    },
+    "WorkoutEntry": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ExerciseEntry"
+        },
+        {
+          "$ref": "#/$defs/SupersetEntry"
+        }
+      ],
+      "title": "WorkoutEntry"
+    },
+    "ExerciseEntry": {
+      "type": "object",
+      "properties": {
+        "exerciseId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "const": "exercise"
+        },
+        "module": {
+          "$ref": "#/$defs/ModuleKind"
+        },
+        "rounds": {
+          "type": "number",
+          "const": 1
+        },
+        "sets": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LoggedSet"
+          }
+        }
+      },
+      "required": [
+        "exerciseId",
+        "title",
+        "description",
+        "kind",
+        "module",
+        "rounds",
+        "sets"
+      ],
+      "additionalProperties": false,
+      "title": "ExerciseEntry"
+    },
+    "LoggedSet": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "reps"
+            },
+            "targetReps": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "weightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "restSeconds": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "actualReps": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "actualWeightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "targetReps",
+            "weightKg",
+            "restSeconds",
+            "actualReps",
+            "actualWeightKg"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "time"
+            },
+            "targetSeconds": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "weightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "restSeconds": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "actualSeconds": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "actualWeightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "targetSeconds",
+            "weightKg",
+            "restSeconds",
+            "actualSeconds",
+            "actualWeightKg"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "title": "LoggedSet"
+    },
+    "SupersetEntry": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "const": "superset"
+        },
+        "module": {
+          "$ref": "#/$defs/ModuleKind"
+        },
+        "rounds": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "restSeconds": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "members": {
+          "minItems": 2,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SupersetMemberSnapshot"
+          }
+        }
+      },
+      "required": [
+        "kind",
+        "module",
+        "rounds",
+        "restSeconds",
+        "members"
+      ],
+      "additionalProperties": false,
+      "title": "SupersetEntry"
+    },
+    "SupersetMemberSnapshot": {
+      "type": "object",
+      "properties": {
+        "exerciseId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "set": {
+          "$ref": "#/$defs/SupersetMemberSet"
+        },
+        "actuals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SupersetMemberActual"
+          }
+        }
+      },
+      "required": [
+        "exerciseId",
+        "title",
+        "description",
+        "set",
+        "actuals"
+      ],
+      "additionalProperties": false,
+      "title": "SupersetMemberSnapshot"
+    },
+    "SupersetMemberActual": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "reps"
+            },
+            "actualReps": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "actualWeightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "actualReps",
+            "actualWeightKg"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "const": "time"
+            },
+            "actualSeconds": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "actualWeightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "actualSeconds",
+            "actualWeightKg"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "title": "SupersetMemberActual"
+    }
+  }
+}

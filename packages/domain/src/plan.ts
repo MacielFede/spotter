@@ -22,12 +22,14 @@ const ModulesSchema = z.array(ModuleSchema).superRefine((modules, ctx) => {
  * Routine: ordered Modules owned by a Plan, with an active/inactive flag
  * scoped per Plan — many Routines may be active at once (ADR 0010).
  */
-export const RoutineSchema = z.strictObject({
-  id: UuidV7Schema,
-  name: nonBlankString('name cannot be blank'),
-  active: z.boolean(),
-  modules: ModulesSchema,
-});
+export const RoutineSchema = z
+  .strictObject({
+    id: UuidV7Schema,
+    name: nonBlankString('name cannot be blank'),
+    active: z.boolean(),
+    modules: ModulesSchema,
+  })
+  .meta({ id: 'Routine', title: 'Routine' });
 
 /** A Plan owns its Routines — neither Exercises nor Workout logs (ADR 0001, ADR 0035). */
 export const PlanSchema = z.strictObject({

@@ -13,7 +13,7 @@ Work is tracked as GitHub issues, numbered in dependency order.
 | `apps/phone` | React Native / Expo app (TypeScript), Drizzle + SQLite (ADR 0043) |
 | `apps/watchos` | watchOS app (Swift), GRDB storage (ADR 0044) |
 | `apps/wearos` | Wear OS app (Kotlin), Room storage (ADR 0044) |
-| `packages/domain` | Zod schemas — the source of truth — plus generated models (ADR 0017) |
+| `packages/domain` | Zod schemas — the source of truth — plus generated models under `gen/` (ADR 0017) |
 | `packages/theme` | Shared semantic theme tokens (ADR 0018) |
 | `packages/codegen` | JSON Schema emission + Swift/Kotlin generators (ADR 0012, ADR 0045) |
 
@@ -58,5 +58,10 @@ artifacts drift from the Zod sources.
 ## Schema-first invariant
 
 Zod schemas in `packages/domain` are the source of truth. Everything else is generated:
-Zod → JSON Schema (`zod-to-json-schema`) → Swift/Kotlin (`quicktype`), in CI/prebuild
-(ADR 0012, ADR 0017, ADR 0045). CI fails if committed generated artifacts drift.
+Zod → JSON Schema (`z.toJSONSchema` — Zod 4's first-party emitter; ADR 0045 names
+`zod-to-json-schema`, which does not support Zod 4) → Swift/Kotlin (`quicktype`),
+in CI/prebuild (ADR 0012, ADR 0017, ADR 0045).
+
+Generated artifacts live in [`packages/domain/gen/`](packages/domain/gen/) and are
+committed — **never hand-edit them**. `pnpm codegen` regenerates everything; CI
+regenerates and fails the build if committed output drifts from the Zod sources.
