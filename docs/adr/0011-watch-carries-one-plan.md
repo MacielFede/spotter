@@ -24,4 +24,10 @@ time**; switching the watch's Plan requires re-syncing.
   changing what the watch can start means activating on the phone and re-syncing.
 - The phone must expose a notion of "the Plan currently on the watch" (selection semantics to be
   decided).
+
+## Resolved follow-up
+
+The selection semantics left open above: the phone marks exactly one Plan as **"On watch"**,
+settable from the Plan screen and the sync screen. Sync pushes exactly that Plan (settled in the
+2026-10-12 grilling session).
 - Offline the watch can still run any synced active Routine and cycle through its Items.

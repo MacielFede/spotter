@@ -25,3 +25,8 @@ presented **one merge at a time** for the user to review and edit.
 - The import pipeline is: parse → diff against DB → present merge list → user resolves each → commit.
 - A failed/abandoned import leaves the DB untouched (commit is the last step).
 - Schema versioning of the file matters; unknown/newer versions must be rejected with a clear error.
+
+## Refinement notes
+
+- The title fallback is safe because Exercise titles are unique ([ADR 0036](0036-exercise-titles-unique.md)).
+- Workouts are the exception to upsert: they dedupe by id and never overwrite ([ADR 0037](0037-workout-import-never-overwrites.md), [ADR 0024](0024-saved-workouts-immutable.md)).

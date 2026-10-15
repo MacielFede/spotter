@@ -23,5 +23,11 @@ the phone shows the "workout in progress" screen, and the only actions available
 
 - Active-workout state is a system-level singleton, not per-device.
 - The phone must be able to learn that a Workout is active even when it was started on the watch
-  (mechanism to be decided — see the follow-up grilling question on live presence vs lazy discovery).
+  (mechanism decided in ADR 0007: on-focus status fetch, no live channel).
 - Starting a Workout is blocked, not merely discouraged, on every surface.
+
+## Superseded note
+
+Partially superseded by [ADR 0038](0038-shared-active-session.md): the active session has no owner
+— any device may log, edit, save, or cancel it (the "phone shows Cancel/Save only" line above no
+longer holds). The one-workout-at-a-time invariant stands.

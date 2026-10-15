@@ -17,8 +17,8 @@ single ORM spans them (Drizzle is TS-only; the watches use native stores).
 A **single versioned schema is the source of truth**, and the domain models plus (de)serialization
 are **generated** for TypeScript, Swift, and Kotlin from it. No app hand-writes the shared model.
 
-The concrete schema format (JSON Schema, Protobuf, etc.) and the generator choice are a follow-up
-decision; the invariant is one source, generated into all three.
+The concrete schema format and pipeline are decided in ADR 0017 (Zod → JSON Schema → Swift/Kotlin);
+the invariant here is one source, generated into all three.
 
 ## Consequences
 

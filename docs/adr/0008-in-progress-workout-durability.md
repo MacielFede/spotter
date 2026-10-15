@@ -27,3 +27,9 @@ the session resumes from the last durable point.
 - Watch storage must hold a partial Workout before it is finished and pushed.
 - On launch, the watch checks for an unfinished local workout and offers to resume it.
 - The debounce window is the worst-case data loss — a few seconds, never a whole session.
+
+## Superseded note
+
+Extended by [ADR 0038](0038-shared-active-session.md): the same durability rule applies to the
+phone, and "the watch is authoritative for the workout it is running" is superseded — the session
+has no owner; the latest draft wins.

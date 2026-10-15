@@ -31,3 +31,8 @@ without depending on the receiving machine's library.
 - Plan JSON export/import needs an embed + reconcile step for Exercises (dedupe on import).
 - Deleting a Plan leaves the Exercise library untouched.
 - Exercise cleanup (unused exercises) becomes a separate concern from Plan deletion.
+
+## Superseded note
+
+Partially superseded by [ADR 0035](0035-plans-do-not-own-workouts.md): a Plan no longer owns its
+Workout logs; Workouts are independent roots referencing the Plan by snapshot.

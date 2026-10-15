@@ -22,3 +22,9 @@ the member Exercises — the members themselves are performed back-to-back.
 - The watch's auto-cycle between Set N and Set N+1 inserts a rest screen when Set N has a rest value.
 - Authoring UI exposes a rest field per Set (with easy "none").
 - Superset rounds share the rest that follows the chain; there is no per-member rest.
+
+## Superseded note
+
+Refined by [ADR 0040](0040-module-slots-and-supersets.md): rest lives **on the Superset** and fires
+after each round; Sets inside a Superset cannot carry rest. Per-Set rest applies only to standalone
+Exercise Items.

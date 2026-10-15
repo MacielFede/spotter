@@ -24,3 +24,8 @@ available on both devices too.
 - The resulting log's fidelity depends on how fresh the draft was when saved; the UI should warn if
   it is saving a partial session.
 - The owner's local partial state must be reconciled so it does not later re-push a now-saved workout.
+
+## Superseded note
+
+Superseded by [ADR 0038](0038-shared-active-session.md): there is no owner — any device may log,
+edit, save, or cancel; terminal actions dedupe by session id; drafts resolve latest-wins.
