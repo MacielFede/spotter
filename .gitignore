@@ -1,0 +1,34 @@
+# Dependency dirs
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+
+# Env
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# Xcode (apps/watchos)
+apps/watchos/build/
+apps/watchos/DerivedData/
+apps/watchos/**/*.xcuserstate
+apps/watchos/**/xcuserdata/
+
+# Gradle / Android (apps/wearos)
+apps/wearos/.gradle/
+apps/wearos/build/
+apps/wearos/**/build/
+apps/wearos/local.properties
+
+# Expo (apps/phone)
+apps/phone/.expo/
+apps/phone/dist/
+apps/phone/web-build/
+apps/phone/*.orig.*
