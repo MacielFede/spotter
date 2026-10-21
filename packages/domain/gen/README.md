@@ -12,8 +12,11 @@ pnpm codegen
   0041): `{ schemaVersion, ...entity }`, one per entity plus `domain.schema.json`,
   the combined codegen input that carries every entity in one document with named,
   deduplicated `$defs`.
-- `swift/Domain.swift` — quicktype-generated Codable models.
-- `kotlin/Domain.kt` — quicktype-generated Jackson models.
+- `swift/Domain.swift` — quicktype-generated Codable models (no consumer yet: the
+  watchOS app was removed from the repo; the artifact stays so the pipeline and
+  ADR 0045 invariant hold if it returns).
+- `kotlin/Domain.kt` — quicktype-generated Jackson models, compiled into the Wear OS
+  app (`apps/wearos`), which carries the round-trip test (issue #14).
 
 Notes:
 
@@ -21,8 +24,6 @@ Notes:
   they carry `schemaVersion` alongside the entity fields, because the emitted
   documents are envelopes. The real export-file and sync-envelope schemas
   (ADR 0023, ADR 0041) land with issues #48 and #41.
-- TODO(#5) / TODO(#6): round-trip encode/decode tests land with the watchOS and
-  Wear OS app scaffolds, which consume these files.
 - ADR 0045 names `zod-to-json-schema`, which does not support Zod 4; emission uses
   Zod 4's first-party `z.toJSONSchema` for the same artifact (ADR 0045 amendment).
 - Custom checks (`.refine`/`.superRefine`: title uniqueness, one-module-per-kind,

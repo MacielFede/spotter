@@ -15,20 +15,17 @@ coverage/
 # macOS
 .DS_Store
 
-# Xcode (apps/watchos)
-apps/watchos/build/
-apps/watchos/DerivedData/
-apps/watchos/**/*.xcuserstate
-apps/watchos/**/xcuserdata/
-
 # Gradle / Android (apps/wearos)
 apps/wearos/.gradle/
+apps/wearos/.kotlin/
 apps/wearos/build/
 apps/wearos/**/build/
 apps/wearos/local.properties
 
-# Expo (apps/phone)
+# Expo (apps/phone) — native dirs are CNG artifacts of `expo prebuild`
 apps/phone/.expo/
+apps/phone/ios/
+apps/phone/android/
 apps/phone/dist/
 apps/phone/web-build/
 apps/phone/*.orig.*

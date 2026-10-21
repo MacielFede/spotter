@@ -13,7 +13,9 @@
     "test:watch": "vitest",
     "build": "pnpm -r --if-present build",
     "codegen": "pnpm --filter @spotter/codegen generate",
-    "test:fixtures": "echo 'no golden fixtures yet (issue #75)'"
+    "test:fixtures": "echo 'no golden fixtures yet (issue #75)'",
+    "build:phone": "pnpm --filter phone exec expo prebuild",
+    "build:wearos": "cd apps/wearos && ./gradlew :app:assembleDebug"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",

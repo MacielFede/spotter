@@ -27,13 +27,7 @@
   },
   "overrides": [
     {
-      "includes": [
-        "apps/watchos/**",
-        "apps/wearos/**",
-        "docs/**",
-        "**/*.md",
-        "packages/domain/gen/**"
-      ],
+      "includes": ["apps/wearos/**", "docs/**", "**/*.md", "packages/domain/gen/**"],
       "formatter": {
         "enabled": false
       },

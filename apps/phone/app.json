@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Spotter",
+    "slug": "spotter",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "app.spotter.phone",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "app.spotter.phone",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": ["expo-dev-client"]
+  }
+}
