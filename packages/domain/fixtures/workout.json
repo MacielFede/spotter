@@ -1,0 +1,58 @@
+{
+  "workoutId": "0193a1b2-c3d4-7e5f-89ab-cdef01234567",
+  "planId": "0193a1b2-c3d4-7e5f-89ab-cdef01234568",
+  "planName": "Hypertrophy",
+  "routineId": "0193a1b2-c3d4-7e5f-89ab-cdef01234569",
+  "routineName": "Push Day A",
+  "startedAt": "2026-10-12T18:30:00+02:00",
+  "endedAt": "2026-10-12T19:35:00+02:00",
+  "startedOn": "phone",
+  "exercises": [
+    {
+      "kind": "exercise",
+      "exerciseId": "0193a1b2-c3d4-7e5f-89ab-cdef01234567",
+      "title": "Bench Press",
+      "description": "",
+      "module": "core",
+      "rounds": 1,
+      "sets": [
+        {
+          "mode": "reps",
+          "targetReps": 8,
+          "weightKg": 60,
+          "restSeconds": 90,
+          "actualReps": 8,
+          "actualWeightKg": 60
+        }
+      ]
+    },
+    {
+      "kind": "superset",
+      "module": "core",
+      "rounds": 2,
+      "restSeconds": 60,
+      "members": [
+        {
+          "exerciseId": "0193a1b2-c3d4-7e5f-89ab-cdef01234568",
+          "title": "Row",
+          "description": "",
+          "set": { "mode": "reps", "targetReps": 12, "weightKg": 20 },
+          "actuals": [
+            { "mode": "reps", "actualReps": 12, "actualWeightKg": 20 },
+            { "mode": "reps", "actualReps": null, "actualWeightKg": null }
+          ]
+        },
+        {
+          "exerciseId": "0193a1b2-c3d4-7e5f-89ab-cdef01234567",
+          "title": "Bench Press",
+          "description": "",
+          "set": { "mode": "time", "targetSeconds": 30, "weightKg": null },
+          "actuals": [
+            { "mode": "time", "actualSeconds": 30, "actualWeightKg": null },
+            { "mode": "time", "actualSeconds": null, "actualWeightKg": null }
+          ]
+        }
+      ]
+    }
+  ]
+}
