@@ -39,6 +39,18 @@ describe('JSON Schema emission (issue #12)', () => {
     ).toBe(false);
   });
 
+  it('committed documents carry the declared version — the CI version check (issue #15)', () => {
+    for (const { file } of allSchemaTargets) {
+      const committed = JSON.parse(
+        readFileSync(join(domainGenDir, 'json-schema', file), 'utf8'),
+      ) as { properties: { schemaVersion: unknown } };
+      expect(committed.properties.schemaVersion).toEqual({
+        type: 'number',
+        const: SCHEMA_VERSION,
+      });
+    }
+  });
+
   it('matches the committed artifacts — regenerate with `pnpm codegen`', () => {
     const emitted = emitJsonSchemas();
     for (const { file } of allSchemaTargets) {

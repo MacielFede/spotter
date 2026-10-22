@@ -11,7 +11,7 @@ android {
     defaultConfig {
         applicationId = "app.spotter.wear"
         minSdk = 30
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
     }
@@ -34,6 +34,7 @@ android {
     sourceSets {
         getByName("main") {
             kotlin.srcDir("../../../packages/domain/gen/kotlin")
+            kotlin.srcDir("../../../packages/theme/gen/wearos")
         }
     }
 }

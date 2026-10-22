@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.30.3",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.13.0"
   },
   "scripts": {
     "lint": "biome check .",
@@ -13,7 +13,7 @@
     "test:watch": "vitest",
     "build": "pnpm -r --if-present build",
     "codegen": "pnpm --filter @spotter/codegen generate",
-    "test:fixtures": "echo 'no golden fixtures yet (issue #75)'",
+    "test:fixtures": "vitest run packages/domain/src/fixtures.test.ts apps/phone/src/lib/workout.test.ts",
     "build:phone": "pnpm --filter phone exec expo prebuild",
     "build:wearos": "cd apps/wearos && ./gradlew :app:assembleDebug"
   },
@@ -24,6 +24,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "better-sqlite3",
       "esbuild"
     ]
   }

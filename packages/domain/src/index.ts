@@ -20,6 +20,16 @@ export {
   type SupersetMember,
   SupersetMemberSchema,
 } from './module.js';
+export {
+  ackOutbox,
+  createMemoryOutbox,
+  enqueueOutbox,
+  failOutbox,
+  type OutboxItem,
+  type OutboxStore,
+  pendingOutbox,
+  pendingOutboxCount,
+} from './outbox.js';
 export { type Plan, PlanSchema, type Routine, RoutineSchema } from './plan.js';
 export {
   type Set,

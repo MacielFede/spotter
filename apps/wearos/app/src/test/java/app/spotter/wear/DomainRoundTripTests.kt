@@ -2,6 +2,7 @@ package app.spotter.wear
 
 import app.spotter.domain.Exercise
 import app.spotter.domain.Workout
+import java.io.File
 import app.spotter.domain.mapper as domainMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -20,10 +21,21 @@ import org.junit.Test
 class DomainRoundTripTests {
     private val mapper = domainMapper.registerModule(JavaTimeModule())
 
+    private fun fixture(name: String): String {
+        val candidates =
+            listOf(
+                File("../../../packages/domain/fixtures/$name"),
+                File("../../packages/domain/fixtures/$name"),
+                File("packages/domain/fixtures/$name"),
+            )
+        val file = candidates.firstOrNull { it.exists() }
+            ?: error("Shared fixture not found: $name (looked in ${candidates.joinToString()})")
+        return file.readText()
+    }
+
     @Test
     fun exerciseRoundTrip() {
-        val json =
-            """{"id":"0193a1b2-c3d4-7e5f-89ab-cdef01234567","title":"Bench Press","description":"","archived":false}"""
+        val json = fixture("exercise.json")
         val first: Exercise = mapper.readValue(json)
         val second: Exercise = mapper.readValue(mapper.writeValueAsString(first))
         assertEquals(first, second)
@@ -31,8 +43,7 @@ class DomainRoundTripTests {
 
     @Test
     fun workoutRoundTrip() {
-        val json =
-            """{"workoutId":"0193a1b2-c3d4-7e5f-89ab-cdef01234567","planId":"0193a1b2-c3d4-7e5f-89ab-cdef01234568","planName":"Hypertrophy","routineId":"0193a1b2-c3d4-7e5f-89ab-cdef01234569","routineName":"Push Day A","startedAt":"2026-10-12T18:30:00+02:00","endedAt":"2026-10-12T19:35:00+02:00","startedOn":"phone","exercises":[{"kind":"exercise","exerciseId":"0193a1b2-c3d4-7e5f-89ab-cdef01234567","title":"Bench Press","description":"","module":"core","rounds":1,"sets":[{"mode":"reps","targetReps":8,"weightKg":60,"restSeconds":90,"actualReps":8,"actualWeightKg":60}]}]}"""
+        val json = fixture("workout.json")
         val first: Workout = mapper.readValue(json)
         val second: Workout = mapper.readValue(mapper.writeValueAsString(first))
         // Field-by-field: the generated `Rounds` union wrapper has no equals().
@@ -44,7 +55,11 @@ class DomainRoundTripTests {
         assertEquals(first.startedAt, second.startedAt)
         assertEquals(first.endedAt, second.endedAt)
         assertEquals(first.startedOn, second.startedOn)
+        assertEquals(first.exercises.size, second.exercises.size)
         assertEquals(first.exercises.first()?.title, second.exercises.first()?.title)
+        assertEquals(first.exercises.first()?.sets?.size, second.exercises.first()?.sets?.size)
+        assertEquals(first.exercises.first()?.sets?.first()?.mode, second.exercises.first()?.sets?.first()?.mode)
+        assertEquals(first.exercises.first()?.sets?.first()?.targetReps, second.exercises.first()?.sets?.first()?.targetReps)
         assertEquals(first.exercises.first()?.sets?.first()?.actualReps, second.exercises.first()?.sets?.first()?.actualReps)
         assertEquals(first.exercises.first()?.sets?.first()?.actualWeightKg, second.exercises.first()?.sets?.first()?.actualWeightKg)
     }

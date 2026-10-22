@@ -4,7 +4,7 @@ Date: 2026-10-11
 
 ## Status
 
-Accepted
+Accepted — amended by ADR 0048 (the watchOS app was removed; Swift output is still generated).
 
 ## Context
 

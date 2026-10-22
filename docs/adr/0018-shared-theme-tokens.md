@@ -4,7 +4,7 @@ Date: 2026-10-11
 
 ## Status
 
-Accepted
+Accepted — amended by ADR 0048 (tokens are generated for the phone and Wear OS only).
 
 ## Context
 

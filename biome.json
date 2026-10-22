@@ -27,7 +27,13 @@
   },
   "overrides": [
     {
-      "includes": ["apps/wearos/**", "docs/**", "**/*.md", "packages/domain/gen/**"],
+      "includes": [
+        "apps/wearos/**",
+        "docs/**",
+        "**/*.md",
+        "packages/domain/gen/**",
+        "packages/theme/gen/**"
+      ],
       "formatter": {
         "enabled": false
       },

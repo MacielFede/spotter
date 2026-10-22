@@ -18,7 +18,7 @@ Work is tracked as GitHub issues, numbered in dependency order.
 
 ## Tooling
 
-- **Package manager:** pnpm (via corepack). Node >= 20.
+- **Package manager:** pnpm (via corepack). Node >= 22.13 (Expo SDK 58's floor; see `.nvmrc`).
 - **Language:** TypeScript, strict; shared config in `tsconfig.base.json`.
 - **Lint + format:** Biome (`biome.json`), one command for the whole repo.
 - **Tests:** Vitest, rooted at `vitest.config.ts`, wired for `packages/*`.
@@ -102,3 +102,7 @@ in CI/prebuild (ADR 0012, ADR 0017, ADR 0045).
 Generated artifacts live in [`packages/domain/gen/`](packages/domain/gen/) and are
 committed — **never hand-edit them**. `pnpm codegen` regenerates everything; CI
 regenerates and fails the build if committed output drifts from the Zod sources.
+
+Version bumps and the contributor checklist live in
+[`docs/schema-versioning.md`](docs/schema-versioning.md); `SCHEMA_VERSION` in
+`packages/domain/src/version.ts` is the only declaration.

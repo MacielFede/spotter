@@ -4,7 +4,7 @@ Date: 2026-10-12
 
 ## Status
 
-Accepted
+Accepted — amended by ADR 0048 (only the Room/Wear OS half ships).
 
 ## Context
 

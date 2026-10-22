@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "plan": {
+    "id": "0193a1b2-c3d4-7e5f-89ab-cdef01234569",
+    "name": "Template Plan",
+    "routines": [
+      {
+        "id": "0193a1b2-c3d4-7e5f-89ab-cdef0123456a",
+        "name": "Template Routine",
+        "active": true,
+        "modules": [
+          {
+            "kind": "warmup",
+            "enabled": false,
+            "items": []
+          },
+          {
+            "kind": "core",
+            "enabled": true,
+            "items": [
+              {
+                "kind": "exercise",
+                "exerciseId": "0193a1b2-c3d4-7e5f-89ab-cdef01234567",
+                "sets": [
+                  {
+                    "mode": "reps",
+                    "targetReps": 8,
+                    "weightKg": 60,
+                    "restSeconds": 90
+                  }
+                ]
+              },
+              {
+                "kind": "superset",
+                "members": [
+                  {
+                    "exerciseId": "0193a1b2-c3d4-7e5f-89ab-cdef01234568",
+                    "set": {
+                      "mode": "reps",
+                      "targetReps": 12,
+                      "weightKg": 20
+                    }
+                  },
+                  {
+                    "exerciseId": "0193a1b2-c3d4-7e5f-89ab-cdef01234567",
+                    "set": {
+                      "mode": "time",
+                      "targetSeconds": 30,
+                      "weightKg": null
+                    }
+                  }
+                ],
+                "rounds": 2,
+                "restSeconds": 60
+              }
+            ]
+          },
+          {
+            "kind": "stretching",
+            "enabled": false,
+            "items": []
+          },
+          {
+            "kind": "cardio",
+            "enabled": false,
+            "items": []
+          }
+        ]
+      }
+    ]
+  },
+  "exercises": [
+    {
+      "id": "0193a1b2-c3d4-7e5f-89ab-cdef01234567",
+      "title": "Bench Press",
+      "description": "Bar to chest. Example form: https://example.com/bench",
+      "archived": false
+    },
+    {
+      "id": "0193a1b2-c3d4-7e5f-89ab-cdef01234568",
+      "title": "Row",
+      "description": "",
+      "archived": false
+    }
+  ]
+}

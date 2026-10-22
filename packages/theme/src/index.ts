@@ -1,1 +1,7 @@
-// Semantic theme tokens land here with issue #16 (ADR 0018).
+export {
+  THEME_VERSION,
+  type ThemeMode,
+  type ThemeRole,
+  type ThemeTokens,
+  themes,
+} from '../gen/phone/theme';

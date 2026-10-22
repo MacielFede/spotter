@@ -71,7 +71,7 @@ companion watch app that records sessions in the gym.
 
 - **Schema:** Zod (TypeScript) is the source of truth → emit JSON Schema → generate Swift + Kotlin.
 - **Theme:** one shared semantic token file (roles like `background`/`primary`=skyblue, light+dark)
-  consumed by all three apps. Follows the OS theme, with a light/dark override in Settings.
+  consumed by both apps. Follows the OS theme, with a light/dark override in Settings.
 - **Phone→Watch (definitions):** manual sync button in Settings; pushes exactly the Current Plan and
   its active Routines + referenced Exercises.
 - **Watch→Phone (finished Workout):** automatic on finish, with a durable outbox that retries and is
@@ -91,7 +91,7 @@ companion watch app that records sessions in the gym.
   (ADR 0047).
 - **History:** chronological log + per-exercise graphs, filterable by Plan (snapshot id) and
   Exercise.
-- **Platforms:** iOS 17 / watchOS 10 / Android 11+ (Wear OS 4).
+- **Platforms:** iOS 17 / Android 11+ (Wear OS 4). watchOS was dropped (ADR 0048).
 
 ## Architecture decisions (index)
 
@@ -142,6 +142,7 @@ companion watch app that records sessions in the gym.
 - [0045](docs/adr/0045-codegen-pipeline.md) — Codegen: zod-to-json-schema → quicktype, in CI/prebuild.
 - [0046](docs/adr/0046-behavior-sharing-fixtures.md) — Behavior hand-written per platform, locked by golden fixtures.
 - [0047](docs/adr/0047-no-cloud-backup.md) — App data is excluded from OS cloud backup.
+- [0048](docs/adr/0048-watchos-app-removed.md) — The watchOS app is removed; Wear OS is the only watch.
 
 ## Out of scope
 

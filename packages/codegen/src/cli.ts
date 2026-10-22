@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { allSchemaTargets, domainGenDir, domainSchemaTarget, emitJsonSchemas } from './emit.js';
 import { runQuicktype } from './quicktype.js';
+import { emitThemes, themeGenDir, themeTargets } from './theme.js';
 
 const packageDir = join(dirname(fileURLToPath(import.meta.url)), '..');
 const domainPackageDir = join(packageDir, '..', 'domain');
@@ -51,6 +52,14 @@ const generate = (): void => {
     join(kotlinDir, 'Domain.kt'),
     combinedSchemaPath,
   ]);
+
+  rmSync(themeGenDir, { recursive: true, force: true });
+  const themes = emitThemes();
+  for (const { file } of themeTargets) {
+    const out = join(themeGenDir, file);
+    mkdirSync(dirname(out), { recursive: true });
+    writeFileSync(out, themes[file] ?? '');
+  }
 };
 
 const command = process.argv[2] ?? 'generate';
