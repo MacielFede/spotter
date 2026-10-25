@@ -1,15 +1,13 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import { useTheme } from '@/theme/ThemeProvider';
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import { useTheme } from "@/theme/ThemeProvider";
 
 export default function TabsLayout() {
   const { tokens } = useTheme();
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: tokens.background },
-        headerTintColor: tokens.textPrimary,
-        headerShadowVisible: false,
+        headerShown: false,
         tabBarStyle: {
           backgroundColor: tokens.surface,
           borderTopColor: tokens.border,
@@ -22,7 +20,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" color={color as string} size={size} />
           ),
@@ -31,7 +29,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="plans"
         options={{
-          title: 'Plans',
+          title: "Plans",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="list-outline" color={color as string} size={size} />
           ),
@@ -40,7 +38,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="history"
         options={{
-          title: 'History',
+          title: "History",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="time-outline" color={color as string} size={size} />
           ),
@@ -49,9 +47,13 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: "Settings",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" color={color as string} size={size} />
+            <Ionicons
+              name="settings-outline"
+              color={color as string}
+              size={size}
+            />
           ),
         }}
       />

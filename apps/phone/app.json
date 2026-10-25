@@ -22,7 +22,10 @@
       "predictiveBackGestureEnabled": false,
       "allowBackup": false
     },
-    "plugins": ["expo-dev-client", "expo-router", "./plugins/withExcludeFromBackup"],
+    "plugins": ["expo-dev-client", "expo-router", "./plugins/withExcludeFromBackup", ["expo-file-system", {
+      "supportsOpeningDocumentsInPlace": true,
+          "enableFileSharing": true
+    }]],
     "experiments": {
       "typedRoutes": true
     }

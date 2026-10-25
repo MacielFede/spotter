@@ -7,8 +7,8 @@ import {
   SCHEMA_VERSION,
   type Workout,
   WorkoutSchema,
-} from '@spotter/domain';
-import { workoutSetCount, workoutVolumeKg } from './workout';
+} from "@spotter/domain";
+import { workoutSetCount, workoutVolumeKg } from "./workout";
 
 export class SchemaVersionError extends Error {
   constructor(
@@ -17,7 +17,7 @@ export class SchemaVersionError extends Error {
   ) {
     super(
       `Unsupported schemaVersion: expected ${expected}, found ${String(found)}. ` +
-        'Download the current template and convert the file to this version.',
+        "Download the current template and convert the file to this version.",
     );
   }
 }
@@ -37,7 +37,7 @@ export const collectPlanExerciseIds = (plan: Plan): string[] => {
   for (const routine of plan.routines) {
     for (const module of routine.modules) {
       for (const item of module.items) {
-        if (item.kind === 'exercise') {
+        if (item.kind === "exercise") {
           ids.add(item.exerciseId);
         } else {
           for (const member of item.members) ids.add(member.exerciseId);
@@ -49,46 +49,50 @@ export const collectPlanExerciseIds = (plan: Plan): string[] => {
 };
 
 /** Self-contained template export: the Plan plus copies of every Exercise it references. */
-export const buildPlanExport = (plan: Plan, library: Exercise[]): PlanExport => {
+export const buildPlanExport = (
+  plan: Plan,
+  library: Exercise[],
+): PlanExport => {
   const byId = new Map(library.map((exercise) => [exercise.id, exercise]));
   const ids = collectPlanExerciseIds(PlanSchema.parse(plan));
   const missing = ids.filter((id) => !byId.has(id));
   if (missing.length > 0) {
-    throw new ImportFormatError(`Cannot export: missing Exercises ${missing.join(', ')}.`);
+    throw new ImportFormatError(
+      `Cannot export: missing Exercises ${missing.join(", ")}.`,
+    );
   }
   return {
     schemaVersion: SCHEMA_VERSION,
     plan: PlanSchema.parse(plan),
-    exercises: ids.map((id) => byId.get(id)).filter((exercise): exercise is Exercise => !!exercise),
+    exercises: ids
+      .map((id) => byId.get(id))
+      .filter((exercise): exercise is Exercise => !!exercise),
   };
 };
 
 export const serializePlanExport = (data: PlanExport): string =>
   `${JSON.stringify(data, null, 2)}\n`;
 
-export const parsePlanExport = (text: string): PlanExport => {
-  let raw: unknown;
-  try {
-    raw = JSON.parse(text);
-  } catch {
-    throw new ImportFormatError('The file is not valid JSON.');
+export const parsePlanExport = (
+  record: Record<string, unknown>,
+): PlanExport => {
+  if (typeof record !== "object" || record === null) {
+    throw new ImportFormatError("The file is not a Plan export.");
   }
-  if (typeof raw !== 'object' || raw === null) {
-    throw new ImportFormatError('The file is not a Plan export.');
-  }
-  const record = raw as Record<string, unknown>;
   if (record.schemaVersion !== SCHEMA_VERSION) {
     throw new SchemaVersionError(SCHEMA_VERSION, record.schemaVersion);
   }
   if (!Array.isArray(record.exercises)) {
-    throw new ImportFormatError('The file has no Exercises array.');
+    throw new ImportFormatError("The file has no Exercises array.");
   }
-  const exercises = record.exercises.map((exercise) => ExerciseSchema.parse(exercise));
+  const exercises = record.exercises.map((exercise) =>
+    ExerciseSchema.parse(exercise),
+  );
   const plan = PlanSchema.parse(record.plan);
   return { schemaVersion: SCHEMA_VERSION, plan, exercises };
 };
 
-export type ExerciseMergeMode = 'create' | 'update' | 'merge';
+export type ExerciseMergeMode = "create" | "update" | "merge";
 
 export interface ExerciseChange {
   imported: Exercise;
@@ -110,8 +114,11 @@ const remapPlan = (plan: Plan, remap: Map<string, string>): Plan =>
       modules: routine.modules.map((module) => ({
         ...module,
         items: module.items.map((item) =>
-          item.kind === 'exercise'
-            ? { ...item, exerciseId: remap.get(item.exerciseId) ?? item.exerciseId }
+          item.kind === "exercise"
+            ? {
+                ...item,
+                exerciseId: remap.get(item.exerciseId) ?? item.exerciseId,
+              }
             : {
                 ...item,
                 members: item.members.map((member) => ({
@@ -128,11 +135,17 @@ const remapPlan = (plan: Plan, remap: Map<string, string>): Plan =>
  * Parse and resolve Exercise identity without writing anything: by id first,
  * then by unique title (merged into the existing Exercise), else create.
  */
-export const preparePlanImport = (text: string, library: Exercise[]): PlanImportPreview => {
-  const data = parsePlanExport(text);
+export const preparePlanImport = (
+  record: Record<string, unknown>,
+  library: Exercise[],
+): PlanImportPreview => {
+  const data = parsePlanExport(record);
   const byId = new Map(library.map((exercise) => [exercise.id, exercise]));
   const byTitle = new Map(
-    library.map((exercise) => [normalizeExerciseTitle(exercise.title), exercise]),
+    library.map((exercise) => [
+      normalizeExerciseTitle(exercise.title),
+      exercise,
+    ]),
   );
   const remap = new Map<string, string>();
   const exerciseChanges: ExerciseChange[] = [];
@@ -141,7 +154,12 @@ export const preparePlanImport = (text: string, library: Exercise[]): PlanImport
     const idMatch = byId.get(imported.id);
     if (idMatch) {
       remap.set(imported.id, idMatch.id);
-      exerciseChanges.push({ imported, localId: idMatch.id, mode: 'update', existing: idMatch });
+      exerciseChanges.push({
+        imported,
+        localId: idMatch.id,
+        mode: "update",
+        existing: idMatch,
+      });
       continue;
     }
     const titleMatch = byTitle.get(normalizeExerciseTitle(imported.title));
@@ -150,13 +168,13 @@ export const preparePlanImport = (text: string, library: Exercise[]): PlanImport
       exerciseChanges.push({
         imported,
         localId: titleMatch.id,
-        mode: 'merge',
+        mode: "merge",
         existing: titleMatch,
       });
       continue;
     }
     remap.set(imported.id, imported.id);
-    exerciseChanges.push({ imported, localId: imported.id, mode: 'create' });
+    exerciseChanges.push({ imported, localId: imported.id, mode: "create" });
   }
 
   return { plan: remapPlan(data.plan, remap), exerciseChanges };
@@ -168,7 +186,7 @@ export const commitPlanImport = (
   savePlan: (plan: Plan) => void,
 ): Plan => {
   for (const change of preview.exerciseChanges) {
-    if (change.mode === 'merge') continue;
+    if (change.mode === "merge") continue;
     saveExercise({ ...change.imported, id: change.localId });
   }
   savePlan(preview.plan);
@@ -178,18 +196,18 @@ export const commitPlanImport = (
 // --------------------------------------------------------------------- CSV
 
 export const CSV_HEADER = [
-  'schemaVersion',
-  'workoutId',
-  'planId',
-  'planName',
-  'routineId',
-  'routineName',
-  'startedAt',
-  'durationSeconds',
-  'exerciseCount',
-  'setCount',
-  'totalVolumeKg',
-  'details',
+  "schemaVersion",
+  "workoutId",
+  "planId",
+  "planName",
+  "routineId",
+  "routineName",
+  "startedAt",
+  "durationSeconds",
+  "exerciseCount",
+  "setCount",
+  "totalVolumeKg",
+  "details",
 ] as const;
 
 /** RFC 4180 field quoting. */
@@ -197,11 +215,17 @@ export const csvEscape = (value: string): string =>
   /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
 
 const durationSeconds = (workout: Workout): number =>
-  Math.max(0, Math.round((Date.parse(workout.endedAt) - Date.parse(workout.startedAt)) / 1000));
+  Math.max(
+    0,
+    Math.round(
+      (Date.parse(workout.endedAt) - Date.parse(workout.startedAt)) / 1000,
+    ),
+  );
 
 const exerciseCount = (workout: Workout): number =>
   workout.exercises.reduce(
-    (total, entry) => total + (entry.kind === 'exercise' ? 1 : entry.members.length),
+    (total, entry) =>
+      total + (entry.kind === "exercise" ? 1 : entry.members.length),
     0,
   );
 
@@ -221,16 +245,16 @@ export const workoutToCsvRow = (workout: Workout): string =>
     JSON.stringify(workout),
   ]
     .map(csvEscape)
-    .join(',');
+    .join(",");
 
 export const exportWorkoutsCsv = (workouts: Workout[]): string =>
-  [CSV_HEADER.join(','), ...workouts.map(workoutToCsvRow)].join('\r\n');
+  [CSV_HEADER.join(","), ...workouts.map(workoutToCsvRow)].join("\r\n");
 
 /** Minimal RFC 4180 reader: quotes, doubled quotes, embedded commas/newlines. */
 export const parseCsv = (text: string): string[][] => {
   const rows: string[][] = [];
   let row: string[] = [];
-  let field = '';
+  let field = "";
   let quoted = false;
 
   for (let index = 0; index < text.length; index += 1) {
@@ -251,20 +275,20 @@ export const parseCsv = (text: string): string[][] => {
 
     if (char === '"') {
       quoted = true;
-    } else if (char === ',') {
+    } else if (char === ",") {
       row.push(field);
-      field = '';
-    } else if (char === '\r') {
-      if (text[index + 1] === '\n') index += 1;
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = '';
-    } else if (char === '\n') {
+      field = "";
+    } else if (char === "\r") {
+      if (text[index + 1] === "\n") index += 1;
       row.push(field);
       rows.push(row);
       row = [];
-      field = '';
+      field = "";
+    } else if (char === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
     } else {
       field += char;
     }
@@ -278,12 +302,12 @@ export const parseCsv = (text: string): string[][] => {
 };
 
 const stable = (value: unknown): string => {
-  if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`;
-  if (value && typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
-      a.localeCompare(b),
+  if (Array.isArray(value)) return `[${value.map(stable).join(",")}]`;
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>).sort(
+      ([a], [b]) => a.localeCompare(b),
     );
-    return `{${entries.map(([key, entry]) => `${JSON.stringify(key)}:${stable(entry)}`).join(',')}}`;
+    return `{${entries.map(([key, entry]) => `${JSON.stringify(key)}:${stable(entry)}`).join(",")}}`;
   }
   return JSON.stringify(value);
 };
@@ -305,32 +329,42 @@ export const prepareWorkoutsCsvImport = (
 ): WorkoutImportPreview => {
   const rows = parseCsv(text);
   const header = rows.shift();
-  if (!header || header.join(',') !== CSV_HEADER.join(',')) {
-    throw new ImportFormatError('The CSV header does not match the current log format.');
+  if (!header || header.join(",") !== CSV_HEADER.join(",")) {
+    throw new ImportFormatError(
+      "The CSV header does not match the current log format.",
+    );
   }
 
-  const existingById = new Map(existing.map((workout) => [workout.workoutId, workout]));
+  const existingById = new Map(
+    existing.map((workout) => [workout.workoutId, workout]),
+  );
   const accepted: Workout[] = [];
   const skipped: string[] = [];
   const conflicts: { workout: Workout; existing: Workout }[] = [];
   const seen = new Map<string, Workout>();
 
   for (const row of rows) {
-    if (row.length === 1 && row[0] === '') continue;
+    if (row.length === 1 && row[0] === "") continue;
     if (row.length !== CSV_HEADER.length) {
-      throw new ImportFormatError('A CSV row has the wrong number of columns.');
+      throw new ImportFormatError("A CSV row has the wrong number of columns.");
     }
     const version = Number(row[0]);
-    if (version !== SCHEMA_VERSION) throw new SchemaVersionError(SCHEMA_VERSION, row[0]);
+    if (version !== SCHEMA_VERSION)
+      throw new SchemaVersionError(SCHEMA_VERSION, row[0]);
 
     let workout: Workout;
     try {
-      workout = WorkoutSchema.parse(JSON.parse(row[CSV_HEADER.length - 1] ?? ''));
+      workout = WorkoutSchema.parse(
+        JSON.parse(row[CSV_HEADER.length - 1] ?? ""),
+      );
     } catch {
-      throw new ImportFormatError(`Workout ${row[1] ?? '?'} has invalid details JSON.`);
+      throw new ImportFormatError(
+        `Workout ${row[1] ?? "?"} has invalid details JSON.`,
+      );
     }
 
-    const local = existingById.get(workout.workoutId) ?? seen.get(workout.workoutId);
+    const local =
+      existingById.get(workout.workoutId) ?? seen.get(workout.workoutId);
     if (local) {
       if (stable(local) === stable(workout)) {
         skipped.push(workout.workoutId);
