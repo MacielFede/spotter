@@ -53,8 +53,14 @@ const routine: Routine = {
 };
 
 const exercises: Record<string, Exercise> = {
-  [EX_A]: { id: EX_A, title: 'Bench Press', description: 'Bar to chest.', archived: false },
-  [EX_B]: { id: EX_B, title: 'Row', description: '', archived: false },
+  [EX_A]: {
+    id: EX_A,
+    title: 'Bench Press',
+    description: 'Bar to chest.',
+    usesWeight: true,
+    archived: false,
+  },
+  [EX_B]: { id: EX_B, title: 'Row', description: '', usesWeight: true, archived: false },
 };
 
 const base = {
@@ -80,6 +86,23 @@ describe('workout draft and prefill (issues #32, #34)', () => {
     expect(superset?.kind).toBe('superset');
     if (superset?.kind === 'superset') {
       expect(superset.members[0]?.actuals).toHaveLength(2);
+    }
+  });
+
+  it('freezes usesWeight into standalone and superset snapshots', () => {
+    const row = exercises[EX_B];
+    if (!row) throw new Error('Row exercise fixture is missing');
+    const bodyweightExercises = {
+      ...exercises,
+      [EX_B]: { ...row, usesWeight: false },
+    };
+    const draft = buildWorkoutDraft({ ...base, exercises: bodyweightExercises, history: [] });
+    const superset = draft.exercises[2];
+
+    expect(superset?.kind).toBe('superset');
+    if (superset?.kind === 'superset') {
+      expect(superset.members[0]?.usesWeight).toBe(false);
+      expect(superset.members[1]?.usesWeight).toBe(true);
     }
   });
 
@@ -118,6 +141,38 @@ describe('workout draft and prefill (issues #32, #34)', () => {
     expect(secondSet?.mode === 'time' ? secondSet.actualSeconds : null).toBe(25);
   });
 
+  it('does not carry historical kilograms into an unweighted snapshot', () => {
+    const previous: Workout = {
+      ...buildWorkoutDraft({ ...base, history: [] }),
+      exercises: buildWorkoutDraft({ ...base, history: [] }).exercises.map((entry) =>
+        entry.kind === 'exercise'
+          ? {
+              ...entry,
+              sets: entry.sets.map((set) =>
+                set.mode === 'reps'
+                  ? { ...set, actualReps: 8, actualWeightKg: 50 }
+                  : { ...set, actualSeconds: 30, actualWeightKg: 50 },
+              ),
+            }
+          : entry,
+      ),
+    };
+    const bench = exercises[EX_A];
+    if (!bench) throw new Error('Bench exercise fixture is missing');
+    const bodyweightExercises = { ...exercises, [EX_A]: { ...bench, usesWeight: false } };
+    const draft = buildWorkoutDraft({
+      ...base,
+      exercises: bodyweightExercises,
+      history: [previous],
+    });
+    const first = draft.exercises[0];
+    const firstSet = first?.kind === 'exercise' ? first.sets[0] : undefined;
+
+    expect(first?.kind === 'exercise' ? first.usesWeight : true).toBe(false);
+    expect(firstSet?.mode === 'reps' ? firstSet.actualReps : null).toBe(8);
+    expect(firstSet?.actualWeightKg).toBeNull();
+  });
+
   it("falls back to the Exercise's last actuals anywhere", () => {
     const otherRoutine: Workout = {
       ...buildWorkoutDraft({ ...base, history: [] }),
@@ -129,6 +184,7 @@ describe('workout draft and prefill (issues #32, #34)', () => {
           exerciseId: EX_A,
           title: 'Bench Press',
           description: '',
+          usesWeight: true,
           module: 'core',
           rounds: 1,
           sets: [

@@ -9,6 +9,8 @@ export const ExerciseSchema = z.strictObject({
   title: nonBlankString('title cannot be blank'),
   /** Free text; links are detected at render time (ADR 0021). */
   description: z.string(),
+  /** Whether exercise sets track a load in kilograms. */
+  usesWeight: z.boolean(),
   /** Archive, never hard-delete (ADR 0030). */
   archived: z.boolean(),
 });

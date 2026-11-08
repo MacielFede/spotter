@@ -54,6 +54,8 @@ export const ExerciseSnapshotSchema = z
     exerciseId: UuidV7Schema,
     title: z.string(),
     description: z.string(),
+    /** Frozen from the Exercise so history keeps the setting it was logged with. */
+    usesWeight: z.boolean(),
   })
   .meta({ id: 'ExerciseSnapshot', title: 'ExerciseSnapshot' });
 

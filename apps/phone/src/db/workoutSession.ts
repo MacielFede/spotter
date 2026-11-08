@@ -4,7 +4,7 @@ import { buildWorkoutDraft, isoWithOffset } from '@/lib/workout';
 import { db } from './client';
 import { clearActiveWorkout, loadActiveWorkout, saveActiveWorkout } from './draft';
 import { listExercises } from './exercises';
-import { listWorkouts, saveWorkout } from './workouts';
+import { listWorkouts, parseStoredWorkout, saveWorkout } from './workouts';
 
 /** Start a shared, ownerless session from a startable Routine (ADR 0038). */
 export const startWorkoutSession = (plan: Plan, routine: Routine): Workout => {
@@ -39,8 +39,7 @@ export const loadWorkoutDraft = (): Workout | null => {
   const active = loadActiveWorkout(db);
   if (!active) return null;
   try {
-    const parsed = WorkoutSchema.safeParse(JSON.parse(active.details));
-    return parsed.success ? parsed.data : null;
+    return parseStoredWorkout(JSON.parse(active.details));
   } catch {
     return null;
   }

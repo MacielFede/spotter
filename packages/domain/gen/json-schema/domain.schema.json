@@ -4,7 +4,7 @@
   "properties": {
     "schemaVersion": {
       "type": "number",
-      "const": 1
+      "const": 2
     },
     "exercise": {
       "type": "object",
@@ -20,6 +20,9 @@
         "description": {
           "type": "string"
         },
+        "usesWeight": {
+          "type": "boolean"
+        },
         "archived": {
           "type": "boolean"
         }
@@ -28,6 +31,7 @@
         "id",
         "title",
         "description",
+        "usesWeight",
         "archived"
       ],
       "additionalProperties": false
@@ -476,6 +480,9 @@
         "description": {
           "type": "string"
         },
+        "usesWeight": {
+          "type": "boolean"
+        },
         "kind": {
           "type": "string",
           "const": "exercise"
@@ -499,6 +506,7 @@
         "exerciseId",
         "title",
         "description",
+        "usesWeight",
         "kind",
         "module",
         "rounds",
@@ -709,6 +717,9 @@
         "description": {
           "type": "string"
         },
+        "usesWeight": {
+          "type": "boolean"
+        },
         "set": {
           "$ref": "#/$defs/SupersetMemberSet"
         },
@@ -723,6 +734,7 @@
         "exerciseId",
         "title",
         "description",
+        "usesWeight",
         "set",
         "actuals"
       ],

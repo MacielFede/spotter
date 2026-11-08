@@ -1,18 +1,14 @@
-import {
-  buildWorkoutDraft as buildDraft,
-  type DraftContext,
-  type Workout,
-} from '@spotter/domain';
+import { buildWorkoutDraft as buildDraft, type DraftContext, type Workout } from '@spotter/domain';
 
 export {
   buildCyclePlan,
   type CycleStep,
   prefillFromHistory,
+  type WorkoutSummary,
   type WorkStepRef,
   workoutDurationSeconds,
   workoutExerciseCount,
   workoutSetCount,
-  type WorkoutSummary,
   workoutSummary,
   workoutVolumeKg,
 } from '@spotter/domain';

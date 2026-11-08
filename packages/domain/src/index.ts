@@ -4,11 +4,11 @@ export {
   type CycleStep,
   type DraftContext,
   prefillFromHistory,
+  type WorkoutSummary,
   type WorkStepRef,
   workoutDurationSeconds,
   workoutExerciseCount,
   workoutSetCount,
-  type WorkoutSummary,
   workoutSummary,
   workoutVolumeKg,
 } from './behavior.js';

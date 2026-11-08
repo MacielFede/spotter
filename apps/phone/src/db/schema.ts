@@ -23,6 +23,7 @@ export const exercises = sqliteTable(
     /** Trimmed + lowercased title, unique (ADR 0036). */
     titleKey: text('title_key').notNull(),
     description: text('description').notNull(),
+    usesWeight: integer('uses_weight', { mode: 'boolean' }).notNull().default(true),
     archived: integer('archived', { mode: 'boolean' }).notNull().default(false),
   },
   (table) => [uniqueIndex('exercises_title_key_unique').on(table.titleKey)],

@@ -9,6 +9,7 @@ const validExercise = {
   id: '0193a1b2-c3d4-7e5f-89ab-cdef01234567',
   title: 'Bench Press',
   description: 'Bar to chest.',
+  usesWeight: true,
   archived: false,
 };
 

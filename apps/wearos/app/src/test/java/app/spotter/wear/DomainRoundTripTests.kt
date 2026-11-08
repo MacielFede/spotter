@@ -57,6 +57,7 @@ class DomainRoundTripTests {
         assertEquals(first.startedOn, second.startedOn)
         assertEquals(first.exercises.size, second.exercises.size)
         assertEquals(first.exercises.first()?.title, second.exercises.first()?.title)
+        assertEquals(first.exercises.first()?.usesWeight, second.exercises.first()?.usesWeight)
         assertEquals(first.exercises.first()?.sets?.size, second.exercises.first()?.sets?.size)
         assertEquals(first.exercises.first()?.sets?.first()?.mode, second.exercises.first()?.sets?.first()?.mode)
         assertEquals(first.exercises.first()?.sets?.first()?.targetReps, second.exercises.first()?.sets?.first()?.targetReps)

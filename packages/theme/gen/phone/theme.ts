@@ -1,6 +1,6 @@
 // Generated from packages/theme/src/tokens.json — do not hand-edit (ADR 0018).
 
-export const THEME_VERSION = 1 as const;
+export const THEME_VERSION = 2 as const;
 
 export type ThemeMode = 'light' | 'dark';
 export type ThemeRole = 'background' | 'surface' | 'surfaceElevated' | 'border' | 'textPrimary' | 'textSecondary' | 'primary' | 'onPrimary' | 'danger' | 'onDanger';

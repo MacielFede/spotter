@@ -26,6 +26,7 @@ const exercise = (id: string, title: string, description = ''): Exercise => ({
   id,
   title,
   description,
+  usesWeight: true,
   archived: false,
 });
 
@@ -81,6 +82,7 @@ const workout: Workout = {
       exerciseId: EX_A,
       title: 'Bench Press',
       description: 'Comma, quote " and\nnewline',
+      usesWeight: true,
       module: 'core',
       rounds: 1,
       sets: [
@@ -139,12 +141,14 @@ describe('Plan JSON import (issue #49)', () => {
 
   it('rejects a mismatched version without writing', () => {
     const text = JSON.stringify({
-      schemaVersion: SCHEMA_VERSION + 1,
+      schemaVersion: SCHEMA_VERSION - 1,
       plan: plan([EX_A]),
       exercises: [exercise(EX_A, 'Bench Press')],
     });
     expect(() => preparePlanImport(text, [])).toThrow(SchemaVersionError);
-    expect(() => preparePlanImport(text, [])).toThrow(/expected 1, found 2/);
+    expect(() => preparePlanImport(text, [])).toThrow(
+      new RegExp(`expected ${SCHEMA_VERSION}, found ${SCHEMA_VERSION - 1}`),
+    );
   });
 });
 
@@ -198,7 +202,10 @@ describe('CSV import (issues #51-#52)', () => {
   });
 
   it('rejects any other schemaVersion', () => {
-    const csv = exportWorkoutsCsv([workout]).replace('\r\n1,', '\r\n7,');
+    const csv = exportWorkoutsCsv([workout]).replace(
+      `\r\n${SCHEMA_VERSION},`,
+      `\r\n${SCHEMA_VERSION - 1},`,
+    );
     expect(() => prepareWorkoutsCsvImport(csv, [])).toThrow(SchemaVersionError);
   });
 });

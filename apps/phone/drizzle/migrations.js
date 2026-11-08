@@ -2,6 +2,7 @@
 
 import m0000 from './0000_elite_reavers.sql';
 import m0001 from './0001_harsh_alice.sql';
+import m0002 from './0002_add_uses_weight.sql';
 import journal from './meta/_journal.json';
 
 export default {
@@ -9,5 +10,6 @@ export default {
   migrations: {
     m0000,
     m0001,
+    m0002,
   },
 };

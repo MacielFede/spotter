@@ -4,7 +4,7 @@ package app.spotter.wear.theme
 import androidx.compose.ui.graphics.Color
 
 object SpotterColors {
-    const val VERSION: Int = 1
+    const val VERSION: Int = 2
 
     object Light {
         val background = Color(0xFFFFFFFF)

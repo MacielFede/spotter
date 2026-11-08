@@ -1,9 +1,12 @@
 import { type Exercise, ExerciseSchema } from '@spotter/domain';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Switch, Text } from 'react-native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { Card } from '@/components/ui/Card';
+import { ListRow } from '@/components/ui/ListRow';
+import { TextField } from '@/components/ui/TextField';
 import { db } from '@/db/client';
 import {
   findExerciseByTitle,
@@ -11,6 +14,7 @@ import {
   saveExercise,
   setExerciseArchived,
 } from '@/db/exercises';
+import { useScreenHeader } from '@/hooks/useScreenHeader';
 import { newUuidV7 } from '@/lib/newUuid';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -21,8 +25,11 @@ export default function ExerciseEditorScreen() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [usesWeight, setUsesWeight] = useState(true);
   const [archived, setArchived] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useScreenHeader(title.trim() || (editingId ? 'Exercise' : 'New Exercise'));
 
   useEffect(() => {
     if (!editingId) return;
@@ -30,6 +37,7 @@ export default function ExerciseEditorScreen() {
     if (existing) {
       setTitle(existing.title);
       setDescription(existing.description);
+      setUsesWeight(existing.usesWeight);
       setArchived(existing.archived);
     }
   }, [editingId]);
@@ -51,6 +59,7 @@ export default function ExerciseEditorScreen() {
       id: editingId ?? newUuidV7(),
       title: trimmed,
       description,
+      usesWeight,
       archived,
     };
     const parsed = ExerciseSchema.safeParse(next);
@@ -75,104 +84,66 @@ export default function ExerciseEditorScreen() {
   };
 
   return (
-    <Screen title={editingId ? 'Edit exercise' : 'New exercise'}>
-      <View style={styles.field}>
-        <Text style={[styles.label, { color: tokens.textPrimary }]}>Title</Text>
-        <TextInput
-          value={title}
-          onChangeText={(value) => {
-            setTitle(value);
-            setError(null);
-          }}
-          placeholder="Bench Press"
-          placeholderTextColor={tokens.textSecondary}
-          autoCapitalize="words"
-          style={[
-            styles.input,
-            {
-              color: tokens.textPrimary,
-              backgroundColor: tokens.surface,
-              borderColor: tokens.border,
-            },
-          ]}
-        />
-      </View>
+    <Screen>
+      <TextField
+        autoCapitalize="words"
+        error={error?.includes('Title') || error?.includes('already exists') ? error : undefined}
+        label="Title"
+        onChangeText={(value) => {
+          setTitle(value);
+          setError(null);
+        }}
+        placeholder="Bench Press"
+        value={title}
+      />
 
-      <View style={styles.field}>
-        <Text style={[styles.label, { color: tokens.textPrimary }]}>Description</Text>
-        <TextInput
-          value={description}
-          onChangeText={setDescription}
-          placeholder="Free text; links become tappable."
-          placeholderTextColor={tokens.textSecondary}
-          multiline
-          textAlignVertical="top"
-          style={[
-            styles.input,
-            styles.multiline,
-            {
-              color: tokens.textPrimary,
-              backgroundColor: tokens.surface,
-              borderColor: tokens.border,
-            },
-          ]}
-        />
-      </View>
+      <TextField
+        label="Description"
+        multiline
+        onChangeText={setDescription}
+        placeholder="Free text; links become tappable."
+        value={description}
+      />
 
-      {editingId ? (
-        <View style={styles.field}>
-          <View style={styles.switchRow}>
-            <View style={styles.switchText}>
-              <Text style={[styles.label, { color: tokens.textPrimary }]}>Archived</Text>
-              <Text style={[styles.hint, { color: tokens.textSecondary }]}>
-                Archived Exercises are hidden from authoring pickers but keep existing Routines and
-                history working.
-              </Text>
-            </View>
+      <Card>
+        <ListRow
+          title="Track weight"
+          subtitle={
+            usesWeight
+              ? 'Sets record kilograms.'
+              : 'This exercise records reps or time without kilograms.'
+          }
+          trailing={
             <Switch
-              value={archived}
-              onValueChange={toggleArchived}
+              value={usesWeight}
+              onValueChange={setUsesWeight}
               trackColor={{ true: tokens.primary, false: tokens.border }}
             />
-          </View>
-        </View>
+          }
+        />
+      </Card>
+
+      {editingId ? (
+        <Card>
+          <ListRow
+            title="Archived"
+            subtitle="Archived Exercises are hidden from authoring pickers but keep existing Routines and history working."
+            trailing={
+              <Switch
+                value={archived}
+                onValueChange={toggleArchived}
+                trackColor={{ true: tokens.primary, false: tokens.border }}
+              />
+            }
+          />
+        </Card>
       ) : null}
 
-      {error ? <Text style={{ color: tokens.danger }}>{error}</Text> : null}
+      {error && !error.includes('Title') && !error.includes('already exists') ? (
+        <Text style={{ color: tokens.danger }}>{error}</Text>
+      ) : null}
 
       <PrimaryButton label={editingId ? 'Save changes' : 'Create exercise'} onPress={save} />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  field: {
-    gap: 6,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  hint: {
-    fontSize: 13,
-  },
-  input: {
-    borderRadius: 10,
-    borderWidth: 1,
-    fontSize: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  multiline: {
-    minHeight: 120,
-  },
-  switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  switchText: {
-    flex: 1,
-    gap: 2,
-  },
-});

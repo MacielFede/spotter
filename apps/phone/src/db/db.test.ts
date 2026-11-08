@@ -33,7 +33,7 @@ import {
   workouts,
 } from './schema';
 import type { AppDatabase } from './types';
-import { listWorkouts, loadWorkout, saveWorkout } from './workouts';
+import { listWorkouts, loadWorkout, parseStoredWorkout, saveWorkout } from './workouts';
 
 const migrationsFolder = fileURLToPath(new URL('../../drizzle', import.meta.url));
 
@@ -54,6 +54,7 @@ const exercise = (id: string, title: string): Exercise => ({
   id,
   title,
   description: '',
+  usesWeight: true,
   archived: false,
 });
 
@@ -110,6 +111,7 @@ const workout: Workout = {
       exerciseId: EX_A,
       title: 'Bench Press',
       description: '',
+      usesWeight: true,
       module: 'core',
       rounds: 1,
       sets: [
@@ -133,6 +135,7 @@ const workout: Workout = {
           exerciseId: EX_B,
           title: 'Row',
           description: '',
+          usesWeight: true,
           set: { mode: 'reps', targetReps: 12, weightKg: 20 },
           actuals: [
             { mode: 'reps', actualReps: 12, actualWeightKg: 20 },
@@ -143,6 +146,7 @@ const workout: Workout = {
           exerciseId: EX_A,
           title: 'Bench Press',
           description: '',
+          usesWeight: true,
           set: { mode: 'time', targetSeconds: 30, weightKg: null },
           actuals: [
             { mode: 'time', actualSeconds: 30, actualWeightKg: null },
@@ -189,6 +193,14 @@ describe('phone storage (issue #21)', () => {
     ).toThrow();
 
     expect(findExerciseByTitle(db, ' BENCH PRESS ')?.id).toBe(EX_A);
+  });
+
+  it('defaults legacy Exercise rows to weight tracking', () => {
+    const db = createDatabase();
+    db.run(
+      sql`insert into exercises (id, title, title_key, description, archived) values (${EX_A}, 'Bench Press', 'bench press', '', 0)`,
+    );
+    expect(loadExercise(db, EX_A)?.usesWeight).toBe(true);
   });
 
   it('hides archived Exercises unless requested (ADR 0030)', () => {
@@ -254,6 +266,22 @@ describe('phone storage (issue #21)', () => {
     expect(loadWorkout(db, workout.workoutId)).toEqual(workout);
     expect(listWorkouts(db)).toEqual([workout]);
     expect(db.select().from(workouts).all()).toHaveLength(1);
+  });
+
+  it('reads pre-v2 local Workout snapshots with weight tracking enabled', () => {
+    const legacy = JSON.parse(JSON.stringify(workout)) as Record<string, unknown>;
+    const entries = legacy.exercises as Record<string, unknown>[];
+    for (const entry of entries) {
+      delete entry.usesWeight;
+      if (entry.kind !== 'superset' || !Array.isArray(entry.members)) continue;
+      for (const member of entry.members) {
+        if (typeof member === 'object' && member !== null) {
+          delete (member as Record<string, unknown>).usesWeight;
+        }
+      }
+    }
+
+    expect(parseStoredWorkout(legacy)).toEqual(workout);
   });
 
   it('keeps a single active draft, separate from saved Workouts (ADR 0038)', () => {

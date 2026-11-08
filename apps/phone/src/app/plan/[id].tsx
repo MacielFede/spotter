@@ -1,11 +1,16 @@
 import type { Plan, Routine } from '@spotter/domain';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Alert, Switch, Text } from 'react-native';
+import { RoutineCard } from '@/components/plans/RoutineCard';
 import { Screen } from '@/components/Screen';
+import { PressableText } from '@/components/ui/PressableText';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { TextField } from '@/components/ui/TextField';
 import { db } from '@/db/client';
 import { loadActiveWorkout } from '@/db/draft';
 import { deletePlan, loadPlan, savePlan } from '@/db/plans';
+import { useScreenHeader } from '@/hooks/useScreenHeader';
 import { emptyRoutine } from '@/lib/authoring';
 import { newUuidV7 } from '@/lib/newUuid';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -24,10 +29,11 @@ export default function PlanDetailScreen() {
   }, [id]);
 
   useFocusEffect(reload);
+  useScreenHeader(name.trim() || 'Plan');
 
   if (!plan) {
     return (
-      <Screen title="Plan">
+      <Screen>
         <Text style={{ color: tokens.textSecondary }}>Plan not found.</Text>
       </Screen>
     );
@@ -86,99 +92,35 @@ export default function PlanDetailScreen() {
   };
 
   return (
-    <Screen title="Plan">
-      <Text style={[styles.label, { color: tokens.textSecondary }]}>Name</Text>
-      <TextInput
-        value={name}
-        onChangeText={setName}
-        onBlur={rename}
-        style={[
-          styles.input,
-          {
-            color: tokens.textPrimary,
-            backgroundColor: tokens.surface,
-            borderColor: tokens.border,
-          },
-        ]}
-      />
+    <Screen>
+      <TextField label="Name" onBlur={rename} onChangeText={setName} value={name} />
 
-      <Text style={[styles.section, { color: tokens.textPrimary }]}>Routines</Text>
+      <SectionHeader
+        title="Routines"
+        action={<PressableText label="+ New routine" onPress={createRoutine} />}
+      />
       {plan.routines.map((routine) => (
-        <View
+        <RoutineCard
           key={routine.id}
-          style={[styles.card, { backgroundColor: tokens.surface, borderColor: tokens.border }]}
-        >
-          <Pressable
-            style={styles.routineText}
-            onPress={() =>
-              router.push({
-                pathname: '/routine-editor',
-                params: { planId: plan.id, routineId: routine.id },
-              })
-            }
-          >
-            <Text style={[styles.routineName, { color: tokens.textPrimary }]}>{routine.name}</Text>
-            <Text style={{ color: tokens.textSecondary }}>
-              {routine.modules.reduce((count, module) => count + module.items.length, 0)} items
-            </Text>
-          </Pressable>
-          <Switch
-            value={routine.active}
-            onValueChange={(active) => toggleRoutine(routine, active)}
-            trackColor={{ true: tokens.primary, false: tokens.border }}
-          />
-        </View>
+          title={routine.name}
+          subtitle={`${routine.modules.reduce((count, module) => count + module.items.length, 0)} items`}
+          onPress={() =>
+            router.push({
+              pathname: '/routine-editor',
+              params: { planId: plan.id, routineId: routine.id },
+            })
+          }
+          trailing={
+            <Switch
+              value={routine.active}
+              onValueChange={(active) => toggleRoutine(routine, active)}
+              trackColor={{ true: tokens.primary, false: tokens.border }}
+            />
+          }
+        />
       ))}
 
-      <Pressable onPress={createRoutine} style={[styles.add, { borderColor: tokens.border }]}>
-        <Text style={{ color: tokens.primary }}>+ New routine</Text>
-      </Pressable>
-
-      <Pressable onPress={removePlan} style={[styles.add, { borderColor: tokens.danger }]}>
-        <Text style={{ color: tokens.danger }}>Delete plan</Text>
-      </Pressable>
+      <PressableText label="Delete plan" onPress={removePlan} tone="danger" />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  label: {
-    fontSize: 13,
-    textTransform: 'uppercase',
-  },
-  input: {
-    borderRadius: 10,
-    borderWidth: 1,
-    fontSize: 18,
-    fontWeight: '600',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  section: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginTop: 8,
-  },
-  card: {
-    alignItems: 'center',
-    borderRadius: 12,
-    borderWidth: 1,
-    flexDirection: 'row',
-    gap: 12,
-    padding: 14,
-  },
-  routineText: {
-    flex: 1,
-    gap: 2,
-  },
-  routineName: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  add: {
-    alignItems: 'center',
-    borderRadius: 10,
-    borderWidth: 1,
-    paddingVertical: 12,
-  },
-});

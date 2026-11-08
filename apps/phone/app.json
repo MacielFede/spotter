@@ -19,13 +19,23 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
+      "predictiveBackGestureEnabled": true,
       "allowBackup": false
     },
-    "plugins": ["expo-dev-client", "expo-router", "./plugins/withExcludeFromBackup", ["expo-file-system", {
-      "supportsOpeningDocumentsInPlace": true,
+    "plugins": [
+      "expo-dev-client",
+      "expo-router",
+      "./plugins/withExcludeFromBackup",
+      [
+        "expo-file-system",
+        {
+          "supportsOpeningDocumentsInPlace": true,
           "enableFileSharing": true
-    }]],
+        }
+      ],
+      "expo-sqlite",
+      "expo-font"
+    ],
     "experiments": {
       "typedRoutes": true
     }

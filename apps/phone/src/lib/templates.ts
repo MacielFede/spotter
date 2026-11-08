@@ -11,9 +11,10 @@ const exercises: Exercise[] = [
     id: EX_BENCH,
     title: 'Bench Press',
     description: 'Bar to chest. Example form: https://example.com/bench',
+    usesWeight: true,
     archived: false,
   },
-  { id: EX_ROW, title: 'Row', description: '', archived: false },
+  { id: EX_ROW, title: 'Row', description: '', usesWeight: true, archived: false },
 ];
 
 const plan: Plan = {
@@ -68,6 +69,7 @@ const workout: Workout = {
       exerciseId: EX_BENCH,
       title: 'Bench Press',
       description: 'Bar to chest. Example form: https://example.com/bench',
+      usesWeight: true,
       module: 'core',
       rounds: 1,
       sets: [

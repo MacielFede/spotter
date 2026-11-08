@@ -68,7 +68,10 @@ data class Exercise (
     val id: String,
 
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val title: String
+    val title: String,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
+    val usesWeight: Boolean
 )
 
 data class Plan (
@@ -236,6 +239,7 @@ data class WorkoutEntry (
 
     val sets: List<LoggedSet>? = null,
     val title: String? = null,
+    val usesWeight: Boolean? = null,
     val members: List<SupersetMemberSnapshot>? = null,
     val restSeconds: Long? = null
 )
@@ -254,7 +258,10 @@ data class SupersetMemberSnapshot (
     val set: SupersetMemberSet,
 
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val title: String
+    val title: String,
+
+    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
+    val usesWeight: Boolean
 )
 
 data class SupersetMemberActual (

@@ -1,8 +1,9 @@
 import type { Plan } from '@spotter/domain';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Text } from 'react-native';
 import { PrimaryButton } from '@/components/PrimaryButton';
+import { PlanCard } from '@/components/plans/PlanCard';
 import { Screen } from '@/components/Screen';
 import { db } from '@/db/client';
 import { listPlans, savePlan } from '@/db/plans';
@@ -26,39 +27,23 @@ export default function PlansScreen() {
   };
 
   return (
-    <Screen title="Plans" subtitle="Author Routines and choose what runs on the watch.">
+    <Screen>
+      <Text style={{ color: tokens.textSecondary }}>
+        Author Routines and choose what runs on the watch.
+      </Text>
       <PrimaryButton label="New plan" onPress={createPlan} />
 
       {plans.length === 0 ? (
         <Text style={{ color: tokens.textSecondary }}>No Plans yet.</Text>
       ) : (
         plans.map((plan) => (
-          <Pressable
+          <PlanCard
             key={plan.id}
-            accessibilityRole="button"
             onPress={() => router.push({ pathname: '/plan/[id]', params: { id: plan.id } })}
-            style={[styles.card, { backgroundColor: tokens.surface, borderColor: tokens.border }]}
-          >
-            <Text style={[styles.title, { color: tokens.textPrimary }]}>{plan.name}</Text>
-            <Text style={{ color: tokens.textSecondary }}>
-              {plan.routines.length} {plan.routines.length === 1 ? 'Routine' : 'Routines'}
-            </Text>
-          </Pressable>
+            plan={plan}
+          />
         ))
       )}
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 4,
-    padding: 14,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-});

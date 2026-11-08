@@ -67,12 +67,14 @@ struct Exercise: Codable {
     let description: String
     let id: String
     let title: String
+    let usesWeight: Bool
 
     enum CodingKeys: String, CodingKey {
         case archived = "archived"
         case description = "description"
         case id = "id"
         case title = "title"
+        case usesWeight = "usesWeight"
     }
 }
 
@@ -98,13 +100,15 @@ extension Exercise {
         archived: Bool? = nil,
         description: String? = nil,
         id: String? = nil,
-        title: String? = nil
+        title: String? = nil,
+        usesWeight: Bool? = nil
     ) -> Exercise {
         return Exercise(
             archived: archived ?? self.archived,
             description: description ?? self.description,
             id: id ?? self.id,
-            title: title ?? self.title
+            title: title ?? self.title,
+            usesWeight: usesWeight ?? self.usesWeight
         )
     }
 
@@ -607,6 +611,7 @@ struct WorkoutEntry: Codable {
     let rounds: Rounds
     let sets: [LoggedSet]?
     let title: String?
+    let usesWeight: Bool?
     let members: [SupersetMemberSnapshot]?
     let restSeconds: Int?
 
@@ -618,6 +623,7 @@ struct WorkoutEntry: Codable {
         case rounds = "rounds"
         case sets = "sets"
         case title = "title"
+        case usesWeight = "usesWeight"
         case members = "members"
         case restSeconds = "restSeconds"
     }
@@ -649,6 +655,7 @@ extension WorkoutEntry {
         rounds: Rounds? = nil,
         sets: [LoggedSet]?? = nil,
         title: String?? = nil,
+        usesWeight: Bool?? = nil,
         members: [SupersetMemberSnapshot]?? = nil,
         restSeconds: Int?? = nil
     ) -> WorkoutEntry {
@@ -660,6 +667,7 @@ extension WorkoutEntry {
             rounds: rounds ?? self.rounds,
             sets: sets ?? self.sets,
             title: title ?? self.title,
+            usesWeight: usesWeight ?? self.usesWeight,
             members: members ?? self.members,
             restSeconds: restSeconds ?? self.restSeconds
         )
@@ -681,6 +689,7 @@ struct SupersetMemberSnapshot: Codable {
     let exerciseID: String
     let supersetMemberSnapshotSet: SupersetMemberSet
     let title: String
+    let usesWeight: Bool
 
     enum CodingKeys: String, CodingKey {
         case actuals = "actuals"
@@ -688,6 +697,7 @@ struct SupersetMemberSnapshot: Codable {
         case exerciseID = "exerciseId"
         case supersetMemberSnapshotSet = "set"
         case title = "title"
+        case usesWeight = "usesWeight"
     }
 }
 
@@ -714,14 +724,16 @@ extension SupersetMemberSnapshot {
         description: String? = nil,
         exerciseID: String? = nil,
         supersetMemberSnapshotSet: SupersetMemberSet? = nil,
-        title: String? = nil
+        title: String? = nil,
+        usesWeight: Bool? = nil
     ) -> SupersetMemberSnapshot {
         return SupersetMemberSnapshot(
             actuals: actuals ?? self.actuals,
             description: description ?? self.description,
             exerciseID: exerciseID ?? self.exerciseID,
             supersetMemberSnapshotSet: supersetMemberSnapshotSet ?? self.supersetMemberSnapshotSet,
-            title: title ?? self.title
+            title: title ?? self.title,
+            usesWeight: usesWeight ?? self.usesWeight
         )
     }
 

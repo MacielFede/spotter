@@ -1,6 +1,10 @@
 import type { Set as DomainSet, SupersetMemberSet } from '@spotter/domain';
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, StyleSheet, Text, View } from 'react-native';
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { Chip } from '@/components/ui/Chip';
+import { NumberField } from '@/components/ui/NumberField';
+import { PressableText } from '@/components/ui/PressableText';
 import { useTheme } from '@/theme/ThemeProvider';
 
 interface SetEditorModalProps {
@@ -8,6 +12,7 @@ interface SetEditorModalProps {
   set: DomainSet | SupersetMemberSet | null;
   /** Standalone Sets carry rest; Superset members do not (ADR 0040). */
   allowRest: boolean;
+  allowWeight?: boolean;
   onClose: () => void;
   onSave: (set: DomainSet | SupersetMemberSet) => void;
 }
@@ -19,7 +24,14 @@ const numberOrNull = (value: string): number | null => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-export function SetEditorModal({ visible, set, allowRest, onClose, onSave }: SetEditorModalProps) {
+export function SetEditorModal({
+  visible,
+  set,
+  allowRest,
+  allowWeight = true,
+  onClose,
+  onSave,
+}: SetEditorModalProps) {
   const { tokens } = useTheme();
   const [mode, setMode] = useState<'reps' | 'time'>('reps');
   const [target, setTarget] = useState('8');
@@ -49,7 +61,7 @@ export function SetEditorModal({ visible, set, allowRest, onClose, onSave }: Set
       setError('Target must be a positive whole number.');
       return;
     }
-    const weightValue = numberOrNull(weight);
+    const weightValue = allowWeight ? numberOrNull(weight) : null;
     if (weightValue !== null && weightValue < 0) {
       setError('Weight cannot be negative.');
       return;
@@ -78,71 +90,53 @@ export function SetEditorModal({ visible, set, allowRest, onClose, onSave }: Set
     onClose();
   };
 
-  const inputStyle = [
-    styles.input,
-    { color: tokens.textPrimary, borderColor: tokens.border, backgroundColor: tokens.surface },
-  ];
-
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
+        <View
+          pointerEvents="none"
+          style={[StyleSheet.absoluteFill, { backgroundColor: tokens.textPrimary, opacity: 0.35 }]}
+        />
         <View style={[styles.card, { backgroundColor: tokens.background }]}>
           <Text style={[styles.title, { color: tokens.textPrimary }]}>Set</Text>
 
           <View style={styles.modeRow}>
             {(['reps', 'time'] as const).map((value) => (
-              <Pressable
+              <Chip
                 key={value}
+                label={value === 'reps' ? 'Reps' : 'Time'}
                 onPress={() => setMode(value)}
-                style={[
-                  styles.mode,
-                  {
-                    borderColor: tokens.border,
-                    backgroundColor: mode === value ? tokens.primary : tokens.surface,
-                  },
-                ]}
-              >
-                <Text style={{ color: mode === value ? tokens.onPrimary : tokens.textPrimary }}>
-                  {value === 'reps' ? 'Reps' : 'Time'}
-                </Text>
-              </Pressable>
+                selected={mode === value}
+              />
             ))}
           </View>
 
-          <Text style={[styles.label, { color: tokens.textSecondary }]}>
-            {mode === 'reps' ? 'Target reps' : 'Target seconds'}
-          </Text>
-          <TextInput
+          <NumberField
+            label={mode === 'reps' ? 'Target reps' : 'Target seconds'}
             value={target}
             onChangeText={setTarget}
-            keyboardType="number-pad"
-            style={inputStyle}
+            unit={mode === 'reps' ? 'reps' : 'sec'}
           />
 
-          <Text style={[styles.label, { color: tokens.textSecondary }]}>Starting weight (kg)</Text>
-          <TextInput
-            value={weight}
-            onChangeText={setWeight}
-            keyboardType="decimal-pad"
-            placeholder="None"
-            placeholderTextColor={tokens.textSecondary}
-            style={inputStyle}
-          />
+          {allowWeight ? (
+            <NumberField
+              label="Starting weight"
+              value={weight}
+              onChangeText={setWeight}
+              placeholder="None"
+              decimal
+              unit="kg"
+            />
+          ) : null}
 
           {allowRest ? (
-            <>
-              <Text style={[styles.label, { color: tokens.textSecondary }]}>
-                Rest after set (s)
-              </Text>
-              <TextInput
-                value={rest}
-                onChangeText={setRest}
-                keyboardType="number-pad"
-                placeholder="None"
-                placeholderTextColor={tokens.textSecondary}
-                style={inputStyle}
-              />
-            </>
+            <NumberField
+              label="Rest after set"
+              value={rest}
+              onChangeText={setRest}
+              placeholder="None"
+              unit="sec"
+            />
           ) : (
             <Text style={{ color: tokens.textSecondary }}>
               Rest lives on the Superset and fires after each round.
@@ -151,12 +145,8 @@ export function SetEditorModal({ visible, set, allowRest, onClose, onSave }: Set
 
           {error ? <Text style={{ color: tokens.danger }}>{error}</Text> : null}
 
-          <Pressable onPress={save} style={[styles.save, { backgroundColor: tokens.primary }]}>
-            <Text style={{ color: tokens.onPrimary, fontWeight: '700' }}>Done</Text>
-          </Pressable>
-          <Pressable onPress={onClose} style={styles.cancel}>
-            <Text style={{ color: tokens.textSecondary }}>Cancel</Text>
-          </Pressable>
+          <PrimaryButton label="Done" onPress={save} />
+          <PressableText label="Cancel" onPress={onClose} tone="secondary" />
         </View>
       </View>
     </Modal>
@@ -166,7 +156,6 @@ export function SetEditorModal({ visible, set, allowRest, onClose, onSave }: Set
 const styles = StyleSheet.create({
   overlay: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.35)',
     flex: 1,
     justifyContent: 'center',
     padding: 20,
@@ -184,33 +173,5 @@ const styles = StyleSheet.create({
   modeRow: {
     flexDirection: 'row',
     gap: 8,
-  },
-  mode: {
-    alignItems: 'center',
-    borderRadius: 8,
-    borderWidth: 1,
-    flex: 1,
-    paddingVertical: 10,
-  },
-  label: {
-    fontSize: 13,
-    textTransform: 'uppercase',
-  },
-  input: {
-    borderRadius: 8,
-    borderWidth: 1,
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-  },
-  save: {
-    alignItems: 'center',
-    borderRadius: 10,
-    marginTop: 4,
-    paddingVertical: 12,
-  },
-  cancel: {
-    alignItems: 'center',
-    paddingVertical: 6,
   },
 });

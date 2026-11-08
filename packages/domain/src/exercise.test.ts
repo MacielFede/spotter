@@ -11,6 +11,7 @@ const exercise = {
   id: makeUuidV7(),
   title: 'Bench Press',
   description: 'See https://example.com/form — flat back, bar to chest.',
+  usesWeight: true,
   archived: false,
 };
 
@@ -21,6 +22,10 @@ describe('ExerciseSchema (issue #7)', () => {
 
   it('parses an archived exercise — archive, never delete (ADR 0030)', () => {
     expect(ExerciseSchema.parse({ ...exercise, archived: true }).archived).toBe(true);
+  });
+
+  it('allows bodyweight exercises to opt out of weight tracking', () => {
+    expect(ExerciseSchema.parse({ ...exercise, usesWeight: false }).usesWeight).toBe(false);
   });
 
   it('parses an empty description — links are detected at render time (ADR 0021)', () => {

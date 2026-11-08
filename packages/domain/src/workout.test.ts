@@ -41,6 +41,7 @@ const exerciseEntry = {
   exerciseId,
   title: 'Bench Press',
   description: 'Bar to chest, https://example.com/bench',
+  usesWeight: true,
   module: 'core',
   rounds: 1,
   sets: [finishedSet, skippedSet],
@@ -56,6 +57,7 @@ const supersetEntry = {
       exerciseId,
       title: 'Bench Press',
       description: '',
+      usesWeight: true,
       set: { mode: 'reps', targetReps: 12, weightKg: 40 },
       actuals: [
         { mode: 'reps', actualReps: 12, actualWeightKg: 40 },
@@ -66,6 +68,7 @@ const supersetEntry = {
       exerciseId: otherExerciseId,
       title: 'Row',
       description: '',
+      usesWeight: true,
       set: { mode: 'time', targetSeconds: 40, weightKg: null },
       actuals: [
         { mode: 'time', actualSeconds: 40, actualWeightKg: null },
@@ -113,6 +116,7 @@ describe('WorkoutSchema (issue #11)', () => {
           exerciseId: makeUuidV7(),
           title: 'Made-up mid-session exercise',
           description: '',
+          usesWeight: true,
           module: 'core',
           rounds: 1,
           sets: [

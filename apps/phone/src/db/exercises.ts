@@ -13,6 +13,7 @@ export const exerciseToRow = (exercise: Exercise): ExerciseInsert => {
     title: parsed.title,
     titleKey: normalizeExerciseTitle(parsed.title),
     description: parsed.description,
+    usesWeight: parsed.usesWeight,
     archived: parsed.archived,
   };
 };
@@ -22,6 +23,7 @@ export const rowToExercise = (row: ExerciseRow): Exercise =>
     id: row.id,
     title: row.title,
     description: row.description,
+    usesWeight: row.usesWeight,
     archived: row.archived,
   });
 
@@ -69,6 +71,7 @@ export const saveExercise = (db: AppDatabase, exercise: Exercise): Exercise => {
         title: row.title,
         titleKey: row.titleKey,
         description: row.description,
+        usesWeight: row.usesWeight,
         archived: row.archived,
       },
     })

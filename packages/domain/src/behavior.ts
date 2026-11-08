@@ -6,13 +6,12 @@
  */
 import type { Exercise } from './exercise.js';
 import type { Plan, Routine } from './plan.js';
-import type { Set as DomainSet } from './set.js';
+import type { Set as DomainSet, SupersetMemberSet } from './set.js';
 import type {
   ExerciseEntry,
   LoggedSet,
   SupersetEntry,
   SupersetMemberActual,
-  SupersetMemberSet,
   Workout,
   WorkoutEntry,
 } from './workout.js';
@@ -27,15 +26,19 @@ const emptyActual = (set: SupersetMemberSet): SupersetMemberActual =>
     ? { mode: 'reps', actualReps: null, actualWeightKg: null }
     : { mode: 'time', actualSeconds: null, actualWeightKg: null };
 
-const copySetActuals = (target: LoggedSet, source: LoggedSet): LoggedSet => {
+const copySetActuals = (target: LoggedSet, source: LoggedSet, usesWeight: boolean): LoggedSet => {
   if (target.mode === 'reps' && source.mode === 'reps') {
-    return { ...target, actualReps: source.actualReps, actualWeightKg: source.actualWeightKg };
+    return {
+      ...target,
+      actualReps: source.actualReps,
+      actualWeightKg: usesWeight ? source.actualWeightKg : null,
+    };
   }
   if (target.mode === 'time' && source.mode === 'time') {
     return {
       ...target,
       actualSeconds: source.actualSeconds,
-      actualWeightKg: source.actualWeightKg,
+      actualWeightKg: usesWeight ? source.actualWeightKg : null,
     };
   }
   return target;
@@ -44,15 +47,20 @@ const copySetActuals = (target: LoggedSet, source: LoggedSet): LoggedSet => {
 const copyActual = (
   target: SupersetMemberActual,
   source: SupersetMemberActual,
+  usesWeight: boolean,
 ): SupersetMemberActual => {
   if (target.mode === 'reps' && source.mode === 'reps') {
-    return { ...target, actualReps: source.actualReps, actualWeightKg: source.actualWeightKg };
+    return {
+      ...target,
+      actualReps: source.actualReps,
+      actualWeightKg: usesWeight ? source.actualWeightKg : null,
+    };
   }
   if (target.mode === 'time' && source.mode === 'time') {
     return {
       ...target,
       actualSeconds: source.actualSeconds,
-      actualWeightKg: source.actualWeightKg,
+      actualWeightKg: usesWeight ? source.actualWeightKg : null,
     };
   }
   return target;
@@ -103,7 +111,7 @@ export const prefillFromHistory = (draft: Workout, history: Workout[]): Workout 
           ...entry,
           sets: entry.sets.map((set, setIndex) => {
             const sourceSet = source.sets[setIndex];
-            return sourceSet ? copySetActuals(set, sourceSet) : set;
+            return sourceSet ? copySetActuals(set, sourceSet, entry.usesWeight) : set;
           }),
         };
       }
@@ -121,7 +129,7 @@ export const prefillFromHistory = (draft: Workout, history: Workout[]): Workout 
             ...member,
             actuals: member.actuals.map((actual, round) => {
               const sourceActual = source.actuals[round];
-              return sourceActual ? copyActual(actual, sourceActual) : actual;
+              return sourceActual ? copyActual(actual, sourceActual, member.usesWeight) : actual;
             }),
           };
         }),
@@ -162,6 +170,7 @@ export const buildWorkoutDraft = ({
           exerciseId: item.exerciseId,
           title: exercise?.title ?? 'Unknown exercise',
           description: exercise?.description ?? '',
+          usesWeight: exercise?.usesWeight ?? true,
           module: module.kind,
           rounds: 1,
           sets: item.sets.map(emptyLoggedSet),
@@ -180,6 +189,7 @@ export const buildWorkoutDraft = ({
             exerciseId: member.exerciseId,
             title: exercise?.title ?? 'Unknown exercise',
             description: exercise?.description ?? '',
+            usesWeight: exercise?.usesWeight ?? true,
             set: member.set,
             actuals: Array.from({ length: item.rounds }, () => emptyActual(member.set)),
           };

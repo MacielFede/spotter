@@ -13,6 +13,7 @@
       "exerciseId": "0193a1b2-c3d4-7e5f-89ab-cdef01234567",
       "title": "Bench Press",
       "description": "",
+      "usesWeight": true,
       "module": "core",
       "rounds": 1,
       "sets": [
@@ -36,6 +37,7 @@
           "exerciseId": "0193a1b2-c3d4-7e5f-89ab-cdef01234568",
           "title": "Row",
           "description": "",
+          "usesWeight": true,
           "set": { "mode": "reps", "targetReps": 12, "weightKg": 20 },
           "actuals": [
             { "mode": "reps", "actualReps": 12, "actualWeightKg": 20 },
@@ -46,6 +48,7 @@
           "exerciseId": "0193a1b2-c3d4-7e5f-89ab-cdef01234567",
           "title": "Bench Press",
           "description": "",
+          "usesWeight": true,
           "set": { "mode": "time", "targetSeconds": 30, "weightKg": null },
           "actuals": [
             { "mode": "time", "actualSeconds": 30, "actualWeightKg": null },

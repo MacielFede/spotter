@@ -6,6 +6,35 @@ import type { AppDatabase } from './types';
 type WorkoutRow = typeof workouts.$inferSelect;
 type WorkoutInsert = typeof workouts.$inferInsert;
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const defaultLegacyWeightFlag = (value: unknown): unknown => {
+  if (!isRecord(value) || Object.hasOwn(value, 'usesWeight')) return value;
+  return { ...value, usesWeight: true };
+};
+
+/**
+ * Existing on-device snapshots predate the schema-v2 weight flag. Imported
+ * files still use strict schema validation; only local records receive this
+ * one-time compatibility default.
+ */
+export const parseStoredWorkout = (value: unknown): Workout => {
+  if (!isRecord(value) || !Array.isArray(value.exercises)) return WorkoutSchema.parse(value);
+
+  const exercises = value.exercises.map((entry) => {
+    if (!isRecord(entry)) return entry;
+    if (entry.kind === 'exercise') return defaultLegacyWeightFlag(entry);
+    if (entry.kind !== 'superset' || !Array.isArray(entry.members)) return entry;
+    return {
+      ...entry,
+      members: entry.members.map(defaultLegacyWeightFlag),
+    };
+  });
+
+  return WorkoutSchema.parse({ ...value, exercises });
+};
+
 export const workoutToRow = (workout: Workout): WorkoutInsert => {
   const parsed = WorkoutSchema.parse(workout);
   return {
@@ -22,7 +51,7 @@ export const workoutToRow = (workout: Workout): WorkoutInsert => {
 };
 
 export const rowToWorkout = (row: WorkoutRow): Workout =>
-  WorkoutSchema.parse(JSON.parse(row.details));
+  parseStoredWorkout(JSON.parse(row.details));
 
 /**
  * Append a saved Workout. Imports and retries dedupe by id and never overwrite

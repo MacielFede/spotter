@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "plan": {
     "id": "0193a1b2-c3d4-7e5f-89ab-cdef01234569",
     "name": "Template Plan",
@@ -74,12 +74,14 @@
       "id": "0193a1b2-c3d4-7e5f-89ab-cdef01234567",
       "title": "Bench Press",
       "description": "Bar to chest. Example form: https://example.com/bench",
+      "usesWeight": true,
       "archived": false
     },
     {
       "id": "0193a1b2-c3d4-7e5f-89ab-cdef01234568",
       "title": "Row",
       "description": "",
+      "usesWeight": true,
       "archived": false
     }
   ]

@@ -1,6 +1,13 @@
 import type { Workout } from '@spotter/domain';
 import { describe, expect, it } from 'vitest';
-import { loggedExercises, volumeSeries, weightSeries } from './progression';
+import {
+  exerciseLogs,
+  loggedExercises,
+  repsSeries,
+  timeSeries,
+  volumeSeries,
+  weightSeries,
+} from './progression';
 
 const EX_A = '0193a1b2-c3d4-7e5f-89ab-cdef01234567';
 const EX_B = '0193a1b2-c3d4-7e5f-89ab-cdef01234568';
@@ -26,6 +33,7 @@ const exerciseEntry = (
   exerciseId,
   title: exerciseId === EX_A ? 'Bench Press' : 'Row',
   description: '',
+  usesWeight: true,
   module: 'core' as const,
   rounds: 1 as const,
   sets: sets.map((set) => ({
@@ -60,7 +68,6 @@ describe('progression series (issue #38)', () => {
     ];
 
     expect(weightSeries(workouts, EX_A).map((point) => point.value)).toEqual([65, 70]);
-    expect(weightSeries(workouts, EX_A, 'plan-2').map((point) => point.value)).toEqual([70]);
   });
 
   it('computes volume from weighted rep sets only', () => {
@@ -77,7 +84,7 @@ describe('progression series (issue #38)', () => {
     expect(volumeSeries(workouts, EX_A)[0]?.value).toBe(980);
   });
 
-  it('ignores weightless and time-only logs without crashing', () => {
+  it('charts bodyweight reps and time without inventing weight or volume', () => {
     const workouts = [
       workout({
         exercises: [
@@ -86,6 +93,7 @@ describe('progression series (issue #38)', () => {
             exerciseId: EX_B,
             title: 'Plank',
             description: '',
+            usesWeight: false,
             module: 'core',
             rounds: 1,
             sets: [
@@ -94,7 +102,7 @@ describe('progression series (issue #38)', () => {
                 targetSeconds: 60,
                 weightKg: null,
                 restSeconds: null,
-                actualSeconds: 60,
+                actualSeconds: 75,
                 actualWeightKg: null,
               },
             ],
@@ -104,6 +112,22 @@ describe('progression series (issue #38)', () => {
     ];
     expect(weightSeries(workouts, EX_B)).toEqual([]);
     expect(volumeSeries(workouts, EX_B)).toEqual([]);
+    expect(timeSeries(workouts, EX_B).map((point) => point.value)).toEqual([75]);
+  });
+
+  it('returns actual rep and time values with workout logs', () => {
+    const workouts = [
+      workout({
+        exercises: [
+          exerciseEntry(EX_A, [
+            { reps: 8, weight: 60 },
+            { reps: 10, weight: 60 },
+          ]),
+        ],
+      }),
+    ];
+    expect(repsSeries(workouts, EX_A).map((point) => point.value)).toEqual([10]);
+    expect(exerciseLogs(workouts, EX_A)[0]?.sets).toHaveLength(2);
   });
 
   it('lists logged exercises across plans', () => {

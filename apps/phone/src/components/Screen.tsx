@@ -1,28 +1,17 @@
-import type { ReactNode } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { useTheme } from "@/theme/ThemeProvider";
+import type { ReactNode } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { useTheme } from '@/theme/ThemeProvider';
 
-interface ScreenProps {
-  title: string;
-  subtitle?: string;
-  children?: ReactNode;
-}
-
-export function Screen({ title, subtitle, children }: ScreenProps) {
+/** Plain scrollable body surface; the route navigator owns the screen title. */
+export function Screen({ children }: { children?: ReactNode }) {
   const { tokens } = useTheme();
   return (
     <ScrollView
-      style={{
-        backgroundColor: tokens.background,
-      }}
       contentContainerStyle={styles.content}
+      contentInsetAdjustmentBehavior="automatic"
+      keyboardShouldPersistTaps="handled"
+      style={{ backgroundColor: tokens.background, flex: 1 }}
     >
-      <Text style={[styles.title, { color: tokens.textPrimary }]}>{title}</Text>
-      {subtitle ? (
-        <Text style={[styles.subtitle, { color: tokens.textSecondary }]}>
-          {subtitle}
-        </Text>
-      ) : null}
       <View style={styles.body}>{children}</View>
     </ScrollView>
   );
@@ -30,15 +19,8 @@ export function Screen({ title, subtitle, children }: ScreenProps) {
 
 const styles = StyleSheet.create({
   content: {
+    flexGrow: 1,
     padding: 20,
-    gap: 12,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-  },
-  subtitle: {
-    fontSize: 15,
   },
   body: {
     gap: 12,
