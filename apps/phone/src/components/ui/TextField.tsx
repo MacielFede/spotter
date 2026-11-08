@@ -14,7 +14,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 export interface TextFieldProps extends Omit<TextInputProps, 'style'> {
   label?: string;
   hint?: string;
-  error?: string;
+  invalid?: boolean;
   unit?: ReactNode;
   inputRef?: Ref<TextInputRef>;
   wrapperStyle?: StyleProp<ViewStyle>;
@@ -26,7 +26,7 @@ export type TextInputRef = ElementRef<typeof TextInput>;
 export function TextField({
   label,
   hint,
-  error,
+  invalid = false,
   unit,
   inputRef,
   wrapperStyle,
@@ -44,7 +44,7 @@ export function TextField({
           styles.inputShell,
           {
             backgroundColor: tokens.surface,
-            borderColor: error ? tokens.danger : tokens.border,
+            borderColor: invalid ? tokens.danger : tokens.border,
           },
         ]}
       >
@@ -63,13 +63,7 @@ export function TextField({
         />
         {unit ? <View style={styles.unit}>{unit}</View> : null}
       </View>
-      {error ? (
-        <Text accessibilityRole="alert" style={[styles.hint, { color: tokens.danger }]}>
-          {error}
-        </Text>
-      ) : hint ? (
-        <Text style={[styles.hint, { color: tokens.textSecondary }]}>{hint}</Text>
-      ) : null}
+      {hint ? <Text style={[styles.hint, { color: tokens.textSecondary }]}>{hint}</Text> : null}
     </View>
   );
 }

@@ -16,6 +16,8 @@ interface SetRowProps {
   targetWeightKg: number | null;
   actualValue: number | null;
   actualWeightKg: number | null;
+  suggestedValue: number | null;
+  suggestedWeightKg: number | null;
   usesWeight: boolean;
   onActualChange: (value: number | null) => void;
   onWeightChange: (value: number | null) => void;
@@ -36,10 +38,7 @@ const numberOrNull = (value: string): number | null => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-const weightText = (actualWeightKg: number | null, targetWeightKg: number | null): string => {
-  if (actualWeightKg !== null) return String(actualWeightKg);
-  return targetWeightKg === null ? '' : String(targetWeightKg);
-};
+const weightText = (value: number | null): string => (value === null ? '' : String(value));
 
 export function SetRow({
   label,
@@ -48,6 +47,8 @@ export function SetRow({
   targetWeightKg,
   actualValue,
   actualWeightKg,
+  suggestedValue,
+  suggestedWeightKg,
   usesWeight,
   onActualChange,
   onWeightChange,
@@ -61,18 +62,18 @@ export function SetRow({
   const { tokens } = useTheme();
   const actualFocused = useRef(false);
   const weightFocused = useRef(false);
-  const [actualText, setActualText] = useState(() =>
-    initialActualText(mode, actualValue ?? targetValue),
-  );
-  const [weightValue, setWeightValue] = useState(() => weightText(actualWeightKg, targetWeightKg));
+  const shownValue = actualValue ?? suggestedValue ?? targetValue;
+  const shownWeightKg = actualWeightKg ?? suggestedWeightKg ?? targetWeightKg;
+  const [actualText, setActualText] = useState(() => initialActualText(mode, shownValue));
+  const [weightValue, setWeightValue] = useState(() => weightText(shownWeightKg));
 
   useEffect(() => {
-    if (!actualFocused.current) setActualText(initialActualText(mode, actualValue ?? targetValue));
-  }, [actualValue, mode, targetValue]);
+    if (!actualFocused.current) setActualText(initialActualText(mode, shownValue));
+  }, [mode, shownValue]);
 
   useEffect(() => {
-    if (!weightFocused.current) setWeightValue(weightText(actualWeightKg, targetWeightKg));
-  }, [actualWeightKg, targetWeightKg]);
+    if (!weightFocused.current) setWeightValue(weightText(shownWeightKg));
+  }, [shownWeightKg]);
 
   const prescribed = mode === 'reps' ? `${targetValue} reps` : formatTimer(targetValue);
   const prescribedLine =
@@ -103,7 +104,7 @@ export function SetRow({
         }}
         onBlur={() => {
           actualFocused.current = false;
-          setActualText(initialActualText(mode, actualValue ?? targetValue));
+          setActualText(initialActualText(mode, shownValue));
         }}
         onFocus={() => {
           actualFocused.current = true;
@@ -126,7 +127,7 @@ export function SetRow({
           }}
           onBlur={() => {
             weightFocused.current = false;
-            setWeightValue(weightText(actualWeightKg, targetWeightKg));
+            setWeightValue(weightText(shownWeightKg));
           }}
           onFocus={() => {
             weightFocused.current = true;

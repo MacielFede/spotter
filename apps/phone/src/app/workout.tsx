@@ -18,6 +18,7 @@ import { Screen } from '@/components/Screen';
 import { Chip } from '@/components/ui/Chip';
 import { Divider } from '@/components/ui/Divider';
 import { PressableText } from '@/components/ui/PressableText';
+import { useSnackbar } from '@/components/ui/SnackbarProvider';
 import type { TextInputRef } from '@/components/ui/TextField';
 import { ItemBlock } from '@/components/workout/ItemBlock';
 import { ModuleCard } from '@/components/workout/ModuleCard';
@@ -128,6 +129,7 @@ export default function WorkoutScreen() {
   });
   const [picker, setPicker] = useState<PickerState>(null);
   const inputRefs = useRef<Record<string, TextInputRef | null>>({});
+  const { showError } = useSnackbar();
 
   useEffect(() => {
     if (workout) persistWorkoutDraft(workout);
@@ -294,7 +296,7 @@ export default function WorkoutScreen() {
       ];
     });
     if (members.length < 2) {
-      Alert.alert('A superset needs at least two exercises.');
+      showError('A superset needs at least two exercises.');
       return;
     }
     const entry: SupersetEntry = {
@@ -383,7 +385,7 @@ export default function WorkoutScreen() {
             finishWorkoutSession(workout);
             router.replace('/');
           } catch (cause) {
-            Alert.alert('Cannot save', cause instanceof Error ? cause.message : 'Invalid workout.');
+            showError(cause instanceof Error ? cause.message : 'Invalid workout.');
           }
         },
       },
@@ -411,7 +413,7 @@ export default function WorkoutScreen() {
   const advanceUnit = (unit: WorkoutUnit) => {
     if (!workout) return;
     const advanced = advanceWorkoutUnit(workout, unit);
-    if (!isUnitComplete(advanced, unit)) {
+    if (unit.memberIndex === null && !isUnitComplete(advanced, unit)) {
       setWorkout(advanced);
       return;
     }
@@ -455,6 +457,8 @@ export default function WorkoutScreen() {
         actualValue={set.mode === 'reps' ? set.actualReps : set.actualSeconds}
         label={`Set ${setIndex + 1}`}
         actualWeightKg={set.actualWeightKg}
+        suggestedValue={(set.mode === 'reps' ? set.suggestedReps : set.suggestedSeconds) ?? null}
+        suggestedWeightKg={set.suggestedWeightKg ?? null}
         focusInput={focusInput}
         mode={set.mode}
         nextTargetFieldKey={nextField.get(targetKey)}
@@ -525,6 +529,11 @@ export default function WorkoutScreen() {
                   key={targetKey}
                   actualValue={actual.mode === 'reps' ? actual.actualReps : actual.actualSeconds}
                   actualWeightKg={actual.actualWeightKg}
+                  suggestedValue={
+                    (actual.mode === 'reps' ? actual.suggestedReps : actual.suggestedSeconds) ??
+                    null
+                  }
+                  suggestedWeightKg={actual.suggestedWeightKg ?? null}
                   focusInput={focusInput}
                   label={`Round ${round + 1}`}
                   mode={actual.mode}

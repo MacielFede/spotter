@@ -172,6 +172,29 @@
                 }
               ]
             },
+            "suggestedReps": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "suggestedWeightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "actualReps": {
               "anyOf": [
                 {
@@ -235,6 +258,29 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "suggestedSeconds": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "suggestedWeightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
                 },
                 {
                   "type": "null"
@@ -437,6 +483,29 @@
               "type": "string",
               "const": "reps"
             },
+            "suggestedReps": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "suggestedWeightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "actualReps": {
               "anyOf": [
                 {
@@ -474,6 +543,29 @@
             "mode": {
               "type": "string",
               "const": "time"
+            },
+            "suggestedSeconds": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "suggestedWeightKg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "actualSeconds": {
               "anyOf": [

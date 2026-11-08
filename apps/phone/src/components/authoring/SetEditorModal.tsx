@@ -1,10 +1,12 @@
 import type { Set as DomainSet, SupersetMemberSet } from '@spotter/domain';
 import { useEffect, useState } from 'react';
-import { Modal, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Chip } from '@/components/ui/Chip';
+import { Modal } from '@/components/ui/Modal';
 import { NumberField } from '@/components/ui/NumberField';
 import { PressableText } from '@/components/ui/PressableText';
+import { useSnackbar } from '@/components/ui/SnackbarProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 
 interface SetEditorModalProps {
@@ -37,7 +39,7 @@ export function SetEditorModal({
   const [target, setTarget] = useState('8');
   const [weight, setWeight] = useState('');
   const [rest, setRest] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const { showError } = useSnackbar();
 
   useEffect(() => {
     if (!visible) return;
@@ -52,23 +54,22 @@ export function SetEditorModal({
       setWeight('');
       setRest('');
     }
-    setError(null);
   }, [visible, set]);
 
   const save = () => {
     const targetValue = numberOrNull(target);
     if (targetValue === null || !Number.isInteger(targetValue) || targetValue <= 0) {
-      setError('Target must be a positive whole number.');
+      showError('Target must be a positive whole number.');
       return;
     }
     const weightValue = allowWeight ? numberOrNull(weight) : null;
     if (weightValue !== null && weightValue < 0) {
-      setError('Weight cannot be negative.');
+      showError('Weight cannot be negative.');
       return;
     }
     const restValue = allowRest ? numberOrNull(rest) : null;
     if (restValue !== null && (!Number.isInteger(restValue) || restValue < 0)) {
-      setError('Rest must be a whole number of seconds.');
+      showError('Rest must be a whole number of seconds.');
       return;
     }
 
@@ -142,8 +143,6 @@ export function SetEditorModal({
               Rest lives on the Superset and fires after each round.
             </Text>
           )}
-
-          {error ? <Text style={{ color: tokens.danger }}>{error}</Text> : null}
 
           <PrimaryButton label="Done" onPress={save} />
           <PressableText label="Cancel" onPress={onClose} tone="secondary" />

@@ -1,6 +1,8 @@
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useSnackbar } from '@/components/ui/SnackbarProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import migrations from '../../drizzle/migrations';
 import { db } from './client';
@@ -11,14 +13,15 @@ import { db } from './client';
  */
 export function DatabaseGate({ children }: { children: ReactNode }) {
   const { tokens } = useTheme();
+  const { showError } = useSnackbar();
   const { success, error } = useMigrations(db, migrations);
 
+  useEffect(() => {
+    if (error) showError(`Database migration failed: ${error.message}`);
+  }, [error, showError]);
+
   if (error) {
-    return (
-      <View style={[styles.center, { backgroundColor: tokens.background }]}>
-        <Text style={{ color: tokens.danger }}>Database migration failed: {error.message}</Text>
-      </View>
-    );
+    return <View style={[styles.center, { backgroundColor: tokens.background }]} />;
   }
 
   if (!success) {

@@ -1,5 +1,12 @@
+import type { Plan } from '@spotter/domain';
 import { describe, expect, it } from 'vitest';
-import { emptyRoutine, isRoutineStartable, move, normalizeModules } from './authoring';
+import {
+  duplicatePlan,
+  emptyRoutine,
+  isRoutineStartable,
+  move,
+  normalizeModules,
+} from './authoring';
 
 const routine = emptyRoutine('0193a1b2-c3d4-7e5f-89ab-cdef01234569', 'Push');
 
@@ -12,6 +19,98 @@ describe('authoring helpers', () => {
       'cardio',
     ]);
     expect(routine.modules.every((module) => !module.enabled)).toBe(true);
+  });
+
+  it('duplicates a Plan with fresh ids and independent authored content', () => {
+    const source: Plan = {
+      id: '0193a1b2-c3d4-7e5f-89ab-cdef01234567',
+      name: 'Strength',
+      routines: [
+        {
+          id: '0193a1b2-c3d4-7e5f-89ab-cdef01234568',
+          name: 'Push',
+          active: true,
+          modules: [
+            {
+              kind: 'warmup',
+              enabled: true,
+              items: [
+                {
+                  kind: 'exercise',
+                  exerciseId: '0193a1b2-c3d4-7e5f-89ab-cdef01234569',
+                  sets: [{ mode: 'reps', targetReps: 8, weightKg: 20, restSeconds: 60 }],
+                },
+              ],
+            },
+            {
+              kind: 'core',
+              enabled: true,
+              items: [
+                {
+                  kind: 'superset',
+                  rounds: 3,
+                  restSeconds: 30,
+                  members: [
+                    {
+                      exerciseId: '0193a1b2-c3d4-7e5f-89ab-cdef01234569',
+                      set: { mode: 'reps', targetReps: 10, weightKg: null },
+                    },
+                    {
+                      exerciseId: '0193a1b2-c3d4-7e5f-89ab-cdef0123456a',
+                      set: { mode: 'time', targetSeconds: 30, weightKg: null },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const generatedIds = [
+      '0193a1b2-c3d4-7e5f-89ab-cdef0123456b',
+      '0193a1b2-c3d4-7e5f-89ab-cdef0123456c',
+    ];
+
+    const copy = duplicatePlan(source, () => {
+      const id = generatedIds.shift();
+      if (!id) throw new Error('duplicatePlan requested too many ids');
+      return id;
+    });
+
+    expect(copy).toEqual({
+      ...source,
+      id: '0193a1b2-c3d4-7e5f-89ab-cdef0123456b',
+      name: 'Copy of Strength',
+      routines: [
+        {
+          ...source.routines[0],
+          id: '0193a1b2-c3d4-7e5f-89ab-cdef0123456c',
+        },
+      ],
+    });
+    expect(generatedIds).toEqual([]);
+    expect(copy.routines[0]).not.toBe(source.routines[0]);
+    expect(copy.routines[0]?.modules).not.toBe(source.routines[0]?.modules);
+    expect(copy.routines[0]?.modules[0]?.items[0]).not.toBe(
+      source.routines[0]?.modules[0]?.items[0],
+    );
+    const sourceExerciseItem = source.routines[0]?.modules[0]?.items[0];
+    const copyExerciseItem = copy.routines[0]?.modules[0]?.items[0];
+    expect(copyExerciseItem).not.toBe(sourceExerciseItem);
+    if (copyExerciseItem?.kind === 'exercise' && sourceExerciseItem?.kind === 'exercise') {
+      expect(copyExerciseItem.sets).not.toBe(sourceExerciseItem.sets);
+      expect(copyExerciseItem.sets[0]).not.toBe(sourceExerciseItem.sets[0]);
+    }
+
+    const sourceSuperset = source.routines[0]?.modules[1]?.items[0];
+    const copySuperset = copy.routines[0]?.modules[1]?.items[0];
+    expect(copySuperset).not.toBe(sourceSuperset);
+    if (copySuperset?.kind === 'superset' && sourceSuperset?.kind === 'superset') {
+      expect(copySuperset.members).not.toBe(sourceSuperset.members);
+      expect(copySuperset.members[0]).not.toBe(sourceSuperset.members[0]);
+      expect(copySuperset.members[0]?.set).not.toBe(sourceSuperset.members[0]?.set);
+    }
   });
 
   it('moves list entries without mutating the source', () => {

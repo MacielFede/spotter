@@ -41,7 +41,8 @@
     "ios": "expo run:ios",
     "run:ios": "expo run:ios",
     "run:android": "expo run:android",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "expo lint"
   },
   "private": true
 }

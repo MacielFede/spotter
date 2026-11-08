@@ -12,7 +12,7 @@ import {
 } from '@spotter/domain';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Modal, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { ExercisePickerModal } from '@/components/authoring/ExercisePickerModal';
 import { SetEditorModal } from '@/components/authoring/SetEditorModal';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -21,8 +21,10 @@ import { Card } from '@/components/ui/Card';
 import { Divider } from '@/components/ui/Divider';
 import { Icon } from '@/components/ui/Icon';
 import { IconButton } from '@/components/ui/IconButton';
+import { Modal } from '@/components/ui/Modal';
 import { NumberField } from '@/components/ui/NumberField';
 import { PressableText } from '@/components/ui/PressableText';
+import { useSnackbar } from '@/components/ui/SnackbarProvider';
 import { TextField } from '@/components/ui/TextField';
 import { db } from '@/db/client';
 import { loadActiveWorkout } from '@/db/draft';
@@ -31,6 +33,12 @@ import { loadPlan, savePlan } from '@/db/plans';
 import { useScreenHeader } from '@/hooks/useScreenHeader';
 import { defaultSet, MODULE_LABELS, move, normalizeModules } from '@/lib/authoring';
 import { formatTimer } from '@/lib/formatWhen';
+import {
+  getPlanImportDraft,
+  PLAN_DRAFT_ID,
+  planImportDraftExercises,
+  updatePlanImportDraft,
+} from '@/lib/planImportDraft';
 import { useTheme } from '@/theme/ThemeProvider';
 
 type MemberSet = DomainSet | SupersetMemberSet;
@@ -76,6 +84,7 @@ const numberOr = (value: string, fallback: number): number => {
 export default function RoutineEditorScreen() {
   const { tokens } = useTheme();
   const { planId, routineId } = useLocalSearchParams<{ planId: string; routineId: string }>();
+  const isDraft = planId === PLAN_DRAFT_ID;
   const [plan, setPlan] = useState<Plan | null>(null);
   const [routine, setRoutine] = useState<Routine | null>(null);
   const [titles, setTitles] = useState<Record<string, string>>({});
@@ -87,24 +96,30 @@ export default function RoutineEditorScreen() {
   const [groupSelection, setGroupSelection] = useState<number[]>([]);
   const [groupRounds, setGroupRounds] = useState('3');
   const [groupRest, setGroupRest] = useState('');
+  const { showError } = useSnackbar();
 
   const reload = useCallback(() => {
     if (!planId || !routineId) return;
-    const loaded = loadPlan(db, planId);
+    const loaded = isDraft ? getPlanImportDraft()?.plan : loadPlan(db, planId);
     const found = loaded?.routines.find((item) => item.id === routineId);
     if (loaded && found) {
       setPlan(loaded);
       setRoutine({ ...found, modules: normalizeModules(found.modules) });
     }
+    const draft = isDraft ? getPlanImportDraft() : null;
+    const library = [
+      ...listExercises(db, { includeArchived: true }),
+      ...(draft ? planImportDraftExercises(draft) : []),
+    ];
     const map: Record<string, string> = {};
     const weightMap: Record<string, boolean> = {};
-    for (const exercise of listExercises(db, { includeArchived: true })) {
+    for (const exercise of library) {
       map[exercise.id] = exercise.title;
       weightMap[exercise.id] = exercise.usesWeight;
     }
     setTitles(map);
     setUsesWeightById(weightMap);
-  }, [planId, routineId]);
+  }, [planId, routineId, isDraft]);
 
   useFocusEffect(reload);
   useScreenHeader(routine?.name ?? 'Routine');
@@ -133,6 +148,10 @@ export default function RoutineEditorScreen() {
 
   const titleFor = (id: string) => titles[id] ?? 'Unknown exercise';
   const setModules = (modules: Module[]) => setRoutine({ ...routine, modules });
+  const persistPlan = (next: Plan) => {
+    if (isDraft) updatePlanImportDraft(next);
+    else savePlan(db, next);
+  };
 
   const patchModule = (kind: ModuleKind, patch: Partial<Module>) => {
     setModules(
@@ -160,7 +179,7 @@ export default function RoutineEditorScreen() {
     const module = routine.modules.find((item) => item.kind === kind);
     if (!module) return;
     if (ids.length < 2) {
-      Alert.alert('Superset needs at least two exercises');
+      showError('Superset needs at least two exercises.');
       return;
     }
     const item: SupersetItem = {
@@ -216,17 +235,17 @@ export default function RoutineEditorScreen() {
     };
     const parsed = PlanSchema.safeParse(nextPlan);
     if (!parsed.success) {
-      Alert.alert('Cannot save routine', parsed.error.issues[0]?.message ?? 'Invalid routine.');
+      showError(`Cannot save routine: ${parsed.error.issues[0]?.message ?? 'Invalid routine.'}`);
       return;
     }
-    savePlan(db, parsed.data);
+    persistPlan(parsed.data);
     setPlan(parsed.data);
     Alert.alert('Saved');
   };
 
   const deleteRoutine = () => {
     if (loadActiveWorkout(db)) {
-      Alert.alert('Workout in progress', 'Finish or cancel the workout before deleting a Routine.');
+      showError('Finish or cancel the workout before deleting a Routine.');
       return;
     }
     Alert.alert('Delete routine?', 'Saved Workouts are not affected.', [
@@ -235,7 +254,7 @@ export default function RoutineEditorScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          savePlan(db, {
+          persistPlan({
             ...plan,
             routines: plan.routines.filter((item) => item.id !== routine.id),
           });
@@ -256,7 +275,7 @@ export default function RoutineEditorScreen() {
     if (!groupFor) return;
     const module = routine.modules.find((item) => item.kind === groupFor);
     if (!module || groupSelection.length < 2) {
-      Alert.alert('Select at least two exercise items to group.');
+      showError('Select at least two exercise items to group.');
       return;
     }
     const indexes = [...groupSelection].sort((a, b) => a - b);
@@ -273,7 +292,7 @@ export default function RoutineEditorScreen() {
       members.push({ exerciseId: item.exerciseId, set });
     }
     if (members.length < 2) {
-      Alert.alert('Select at least two exercise items to group.');
+      showError('Select at least two exercise items to group.');
       return;
     }
     const rest = groupRest.trim() ? Math.max(0, Math.round(numberOr(groupRest, 0))) : null;

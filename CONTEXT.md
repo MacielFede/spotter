@@ -63,7 +63,9 @@ companion watch app that records sessions in the gym.
 - Deleting a Plan or Routine leaves every Workout untouched; logs reference them only by snapshot.
 - Mode and starting weight are authored once; a workout may change **actuals**, never the template.
 - New Workout prefills from the previous Workout of the **same Routine**, then the Exercise's last
-  actuals anywhere, then the template's starting values — matched by position.
+  actuals anywhere, then the template's starting values — matched by position. Prefilled values are
+  **suggestions**, not actuals: they show in the inputs but a Set only counts as logged once the user
+  logs it.
 - While a workout is active, Plans/Routines cannot be deleted or deactivated, and no Plan push
   reaches the watch (ADR 0042). Mid-workout template edits propagate only to not-yet-started Items.
 

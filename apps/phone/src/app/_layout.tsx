@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { SnackbarProvider } from '@/components/ui/SnackbarProvider';
 import { DatabaseGate } from '@/db/DatabaseGate';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
@@ -40,9 +41,11 @@ function ThemedApp() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <DatabaseGate>
-        <ThemedApp />
-      </DatabaseGate>
+      <SnackbarProvider>
+        <DatabaseGate>
+          <ThemedApp />
+        </DatabaseGate>
+      </SnackbarProvider>
     </ThemeProvider>
   );
 }

@@ -1,26 +1,26 @@
 import type { Plan } from '@spotter/domain';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
+import { useSnackbar } from '@/components/ui/SnackbarProvider';
 import { db } from '@/db/client';
-import { listExercises, saveExercise } from '@/db/exercises';
-import { listPlans, savePlan } from '@/db/plans';
+import { listExercises } from '@/db/exercises';
+import { listPlans } from '@/db/plans';
 import { listWorkouts, saveWorkout } from '@/db/workouts';
 import {
   buildPlanExport,
-  commitPlanImport,
   commitWorkoutsImport,
   exportWorkoutsCsv,
-  type PlanImportPreview,
   preparePlanImport,
   prepareWorkoutsCsvImport,
   serializePlanExport,
   type WorkoutImportPreview,
 } from '@/lib/interop';
+import { PLAN_DRAFT_ID, startPlanImportDraft } from '@/lib/planImportDraft';
 import { LOGS_TEMPLATE, PLAN_TEMPLATE } from '@/lib/templates';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -28,11 +28,8 @@ export default function TransferScreen() {
   const { tokens } = useTheme();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [planPreview, setPlanPreview] = useState<PlanImportPreview | null>(null);
-  const [reviewIndex, setReviewIndex] = useState(0);
-  const [editTitle, setEditTitle] = useState('');
   const [logsPreview, setLogsPreview] = useState<WorkoutImportPreview | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { showError } = useSnackbar();
 
   useFocusEffect(
     useCallback(() => {
@@ -54,69 +51,41 @@ export default function TransferScreen() {
       const data = buildPlanExport(selectedPlan, listExercises(db, { includeArchived: true }));
       share(serializePlanExport(data), `${selectedPlan.name}.json`);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not export Plan.');
+      showError(cause instanceof Error ? cause.message : 'Could not export Plan.');
     }
   };
 
   const exportLogs = () => share(exportWorkoutsCsv(listWorkouts(db)), 'spotter-logs.csv');
 
-  const pickAndReadFile = async (type: 'json' | 'csv') => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: type === 'json' ? 'application/json' : 'text/csv',
-        copyToCacheDirectory: true,
-      });
-
-      if (result.canceled || !result.assets || result.assets.length === 0) {
-        console.log('User canceled file picker');
-        return;
-      }
-      const fileUri = result.assets[0].uri;
-      const fileContent = new File(fileUri);
-      return JSON.parse(fileContent.textSync());
-    } catch (error) {
-      console.error('Error reading JSON file:', error);
-      Alert.alert('Error', 'Failed to read or parse the JSON file.');
-      return null;
-    }
+  /** Returns the picked file's text, or null when the user cancels. Read errors propagate. */
+  const pickFileText = async (type: 'json' | 'csv') => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: type === 'json' ? 'application/json' : 'text/csv',
+      copyToCacheDirectory: true,
+    });
+    if (result.canceled || !result.assets || result.assets.length === 0) return null;
+    return new File(result.assets[0].uri).textSync();
   };
 
-  const previewPlan = async () => {
+  const importPlan = async () => {
     try {
-      setError(null);
-      const fileContent = await pickAndReadFile('json');
-      const preview = preparePlanImport(fileContent, listExercises(db, { includeArchived: true }));
-      setPlanPreview(preview);
-      setReviewIndex(0);
-      setEditTitle(preview.exerciseChanges[0]?.imported.title ?? '');
+      const text = await pickFileText('json');
+      if (text === null) return;
+      startPlanImportDraft(preparePlanImport(text, listExercises(db, { includeArchived: true })));
+      router.push({ pathname: '/plan/[id]', params: { id: PLAN_DRAFT_ID } });
     } catch (cause) {
-      setPlanPreview(null);
-      console.log(
-        'Error reading JSON file:',
-        cause instanceof Error ? cause.message : 'Unknown error',
-      );
-      setError('Could not read Plan JSON.');
+      showError(cause instanceof Error ? cause.message : 'Could not read Plan JSON.');
     }
-  };
-
-  const commitPlanWith = (preview: PlanImportPreview) => {
-    commitPlanImport(
-      preview,
-      (exercise) => saveExercise(db, exercise),
-      (plan) => savePlan(db, plan),
-    );
-    setPlanPreview(null);
-    Alert.alert('Imported', 'The Plan and its Exercises were upserted.');
   };
 
   const previewLogs = async () => {
     try {
-      setError(null);
-      const fileContent = await pickAndReadFile('csv');
-      setLogsPreview(prepareWorkoutsCsvImport(fileContent, listWorkouts(db)));
+      const text = await pickFileText('csv');
+      if (text === null) return;
+      setLogsPreview(prepareWorkoutsCsvImport(text, listWorkouts(db)));
     } catch (cause) {
       setLogsPreview(null);
-      setError(cause instanceof Error ? cause.message : 'Could not read CSV.');
+      showError(cause instanceof Error ? cause.message : 'Could not read CSV.');
     }
   };
 
@@ -127,14 +96,11 @@ export default function TransferScreen() {
     Alert.alert('Imported', `${count} Workouts restored. Existing logs were kept.`);
   };
 
-  const review = planPreview?.exerciseChanges[reviewIndex];
-
   return (
     <Screen>
       <Text style={{ color: tokens.textSecondary }}>
         Files are version-locked and self-contained.
       </Text>
-      {error ? <Text style={{ color: tokens.danger }}>{error}</Text> : null}
 
       <Text style={[styles.section, { color: tokens.textPrimary }]}>Export Plan JSON</Text>
       <View style={styles.chips}>
@@ -176,90 +142,7 @@ export default function TransferScreen() {
       </View>
 
       <Text style={[styles.section, { color: tokens.textPrimary }]}>Import Plan JSON</Text>
-      <PrimaryButton label="Pick Plan JSON" onPress={previewPlan} />
-
-      {planPreview && !review ? (
-        <View
-          style={[styles.card, { borderColor: tokens.border, backgroundColor: tokens.surface }]}
-        >
-          <Text style={{ color: tokens.textPrimary }}>
-            No conflicting Exercises — the Plan is ready to import.
-          </Text>
-          <Pressable onPress={() => commitPlanWith(planPreview)}>
-            <Text style={{ color: tokens.primary }}>Commit import</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      {planPreview && review ? (
-        <View
-          style={[styles.card, { borderColor: tokens.border, backgroundColor: tokens.surface }]}
-        >
-          <Text style={[styles.cardTitle, { color: tokens.textPrimary }]}>
-            {reviewIndex + 1} / {planPreview.exerciseChanges.length} · {review.mode}
-          </Text>
-          {review.mode === 'merge' ? (
-            <Text style={{ color: tokens.textPrimary }}>Imported: {review.imported.title}</Text>
-          ) : (
-            <TextInput
-              value={editTitle}
-              onChangeText={setEditTitle}
-              placeholder="Title"
-              placeholderTextColor={tokens.textSecondary}
-              style={[
-                styles.input,
-                styles.titleInput,
-                {
-                  color: tokens.textPrimary,
-                  borderColor: tokens.border,
-                  backgroundColor: tokens.background,
-                },
-              ]}
-            />
-          )}
-          {review.existing ? (
-            <Text style={{ color: tokens.textSecondary }}>Existing: {review.existing.title}</Text>
-          ) : null}
-          {review.mode === 'merge' ? (
-            <Text style={{ color: tokens.textSecondary }}>
-              Title match — references are remapped to the existing Exercise; its content is kept.
-            </Text>
-          ) : null}
-          <View style={styles.actions}>
-            <Pressable
-              onPress={() => {
-                const trimmed = editTitle.trim();
-                const updated: PlanImportPreview = {
-                  ...planPreview,
-                  exerciseChanges: planPreview.exerciseChanges.map((change, index) =>
-                    index === reviewIndex && trimmed
-                      ? {
-                          ...change,
-                          imported: { ...change.imported, title: trimmed },
-                        }
-                      : change,
-                  ),
-                };
-                setPlanPreview(updated);
-                if (reviewIndex + 1 >= updated.exerciseChanges.length) {
-                  commitPlanWith(updated);
-                  return;
-                }
-                const nextIndex = reviewIndex + 1;
-                setReviewIndex(nextIndex);
-                setEditTitle(updated.exerciseChanges[nextIndex]?.imported.title ?? '');
-              }}
-            >
-              <Text style={{ color: tokens.primary }}>
-                {reviewIndex + 1 >= planPreview.exerciseChanges.length ? 'Commit import' : 'Next'}
-              </Text>
-            </Pressable>
-            <Pressable onPress={() => setPlanPreview(null)}>
-              <Text style={{ color: tokens.textSecondary }}>Cancel</Text>
-            </Pressable>
-          </View>
-        </View>
-      ) : null}
+      <PrimaryButton label="Pick Plan JSON" onPress={importPlan} />
 
       <Text style={[styles.section, { color: tokens.textPrimary }]}>Import logs CSV</Text>
       <PrimaryButton label="Pick logs CSV" onPress={previewLogs} />
@@ -303,27 +186,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
-  input: {
-    borderRadius: 10,
-    borderWidth: 1,
-    fontSize: 14,
-    minHeight: 100,
-    padding: 10,
-    textAlignVertical: 'top',
-  },
   card: {
     borderRadius: 12,
     borderWidth: 1,
     gap: 6,
     padding: 14,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  titleInput: {
-    minHeight: 0,
-    paddingVertical: 8,
   },
   actions: {
     flexDirection: 'row',

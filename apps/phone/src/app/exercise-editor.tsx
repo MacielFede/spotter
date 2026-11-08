@@ -1,11 +1,12 @@
 import { type Exercise, ExerciseSchema } from '@spotter/domain';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Switch, Text } from 'react-native';
+import { Switch } from 'react-native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { Card } from '@/components/ui/Card';
 import { ListRow } from '@/components/ui/ListRow';
+import { useSnackbar } from '@/components/ui/SnackbarProvider';
 import { TextField } from '@/components/ui/TextField';
 import { db } from '@/db/client';
 import {
@@ -27,7 +28,8 @@ export default function ExerciseEditorScreen() {
   const [description, setDescription] = useState('');
   const [usesWeight, setUsesWeight] = useState(true);
   const [archived, setArchived] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [titleInvalid, setTitleInvalid] = useState(false);
+  const { showError } = useSnackbar();
 
   useScreenHeader(title.trim() || (editingId ? 'Exercise' : 'New Exercise'));
 
@@ -45,13 +47,15 @@ export default function ExerciseEditorScreen() {
   const save = () => {
     const trimmed = title.trim();
     if (!trimmed) {
-      setError('Title cannot be blank.');
+      setTitleInvalid(true);
+      showError('Title cannot be blank.');
       return;
     }
 
     const duplicate = findExerciseByTitle(db, trimmed);
     if (duplicate && duplicate.id !== editingId) {
-      setError(`"${duplicate.title}" already exists. Exercise titles are unique.`);
+      setTitleInvalid(true);
+      showError(`"${duplicate.title}" already exists. Exercise titles are unique.`);
       return;
     }
 
@@ -64,7 +68,7 @@ export default function ExerciseEditorScreen() {
     };
     const parsed = ExerciseSchema.safeParse(next);
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Exercise is not valid.');
+      showError(parsed.error.issues[0]?.message ?? 'Exercise is not valid.');
       return;
     }
 
@@ -72,7 +76,7 @@ export default function ExerciseEditorScreen() {
       saveExercise(db, parsed.data);
       router.back();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not save the Exercise.');
+      showError(cause instanceof Error ? cause.message : 'Could not save the Exercise.');
     }
   };
 
@@ -87,11 +91,11 @@ export default function ExerciseEditorScreen() {
     <Screen>
       <TextField
         autoCapitalize="words"
-        error={error?.includes('Title') || error?.includes('already exists') ? error : undefined}
+        invalid={titleInvalid}
         label="Title"
         onChangeText={(value) => {
           setTitle(value);
-          setError(null);
+          setTitleInvalid(false);
         }}
         placeholder="Bench Press"
         value={title}
@@ -137,10 +141,6 @@ export default function ExerciseEditorScreen() {
             }
           />
         </Card>
-      ) : null}
-
-      {error && !error.includes('Title') && !error.includes('already exists') ? (
-        <Text style={{ color: tokens.danger }}>{error}</Text>
       ) : null}
 
       <PrimaryButton label={editingId ? 'Save changes' : 'Create exercise'} onPress={save} />

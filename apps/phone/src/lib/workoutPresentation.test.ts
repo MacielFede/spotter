@@ -117,6 +117,50 @@ describe('workout presentation helpers', () => {
     expect(nextIncompleteUnit(finished, { entryIndex: 1, memberIndex: 1 })).toBeUndefined();
   });
 
+  it('cycles back to the first Superset member before leaving the Superset', () => {
+    const exercise = workout.exercises[0];
+    if (exercise?.kind !== 'exercise') throw new Error('expected an exercise');
+    const withTail: Workout = {
+      ...workout,
+      exercises: [
+        ...workout.exercises,
+        {
+          ...exercise,
+          sets: [
+            {
+              mode: 'reps',
+              targetReps: 8,
+              weightKg: 10,
+              restSeconds: null,
+              actualReps: null,
+              actualWeightKg: null,
+            },
+          ],
+        },
+      ],
+    };
+    const tail = { entryIndex: 2, memberIndex: null };
+
+    expect(nextIncompleteUnit(withTail, { entryIndex: 1, memberIndex: 1 })).toEqual({
+      entryIndex: 1,
+      memberIndex: 0,
+    });
+
+    const supersetDone = finishUnit(finishUnit(withTail, { entryIndex: 1, memberIndex: 0 }), {
+      entryIndex: 1,
+      memberIndex: 1,
+    });
+    expect(nextIncompleteUnit(supersetDone, { entryIndex: 1, memberIndex: 1 })).toEqual(tail);
+  });
+
+  it('keeps the unit itself as the next unit when no sibling is left', () => {
+    const rowDone = finishUnit(workout, { entryIndex: 1, memberIndex: 1 });
+    expect(nextIncompleteUnit(rowDone, { entryIndex: 1, memberIndex: 0 })).toEqual({
+      entryIndex: 1,
+      memberIndex: 0,
+    });
+  });
+
   it('logs one set per step and only completes the exercise after its last set', () => {
     const exercise = workout.exercises[0];
     if (exercise?.kind !== 'exercise') throw new Error('expected an exercise');
@@ -183,6 +227,41 @@ describe('workout presentation helpers', () => {
     expect(unitProgress(stepped, press)).toEqual({ done: 1, total: 3 });
     expect(unitProgress(stepped, row)).toEqual({ done: 1, total: 2 });
     expect(isUnitComplete(stepped, press)).toBe(false);
+  });
+
+  it('keeps prefilled suggestions unlogged until the set is logged', () => {
+    const exercise = workout.exercises[0];
+    if (exercise?.kind !== 'exercise') throw new Error('expected an exercise');
+    const prefilled: Workout = {
+      ...workout,
+      exercises: [
+        {
+          ...exercise,
+          sets: [
+            {
+              mode: 'reps',
+              targetReps: 8,
+              weightKg: 10,
+              restSeconds: null,
+              suggestedReps: 9,
+              suggestedWeightKg: 12,
+              actualReps: null,
+              actualWeightKg: null,
+            },
+          ],
+        },
+      ],
+    };
+    const unit = { entryIndex: 0, memberIndex: null };
+
+    expect(unitProgress(prefilled, unit)).toEqual({ done: 0, total: 1 });
+    expect(firstIncompleteUnit(prefilled)).toEqual(unit);
+
+    const logged = advanceWorkoutUnit(prefilled, unit);
+    expect(logged.exercises[0]).toMatchObject({
+      sets: [{ actualReps: 9, actualWeightKg: 12 }],
+    });
+    expect(isUnitComplete(logged, unit)).toBe(true);
   });
 
   it('does not change a unit that is already fully logged', () => {

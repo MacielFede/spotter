@@ -4,7 +4,7 @@ Date: 2026-10-11
 
 ## Status
 
-Accepted
+Partially superseded by ADR 0049 (phone Home flow); the watch decision remains in force.
 
 ## Context
 

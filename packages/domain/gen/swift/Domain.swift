@@ -751,13 +751,19 @@ struct SupersetMemberActual: Codable {
     let actualReps: Int?
     let actualWeightKg: Double?
     let mode: Mode
+    let suggestedReps: Int?
+    let suggestedWeightKg: Double?
     let actualSeconds: Int?
+    let suggestedSeconds: Int?
 
     enum CodingKeys: String, CodingKey {
         case actualReps = "actualReps"
         case actualWeightKg = "actualWeightKg"
         case mode = "mode"
+        case suggestedReps = "suggestedReps"
+        case suggestedWeightKg = "suggestedWeightKg"
         case actualSeconds = "actualSeconds"
+        case suggestedSeconds = "suggestedSeconds"
     }
 }
 
@@ -783,13 +789,19 @@ extension SupersetMemberActual {
         actualReps: Int?? = nil,
         actualWeightKg: Double?? = nil,
         mode: Mode? = nil,
-        actualSeconds: Int?? = nil
+        suggestedReps: Int?? = nil,
+        suggestedWeightKg: Double?? = nil,
+        actualSeconds: Int?? = nil,
+        suggestedSeconds: Int?? = nil
     ) -> SupersetMemberActual {
         return SupersetMemberActual(
             actualReps: actualReps ?? self.actualReps,
             actualWeightKg: actualWeightKg ?? self.actualWeightKg,
             mode: mode ?? self.mode,
-            actualSeconds: actualSeconds ?? self.actualSeconds
+            suggestedReps: suggestedReps ?? self.suggestedReps,
+            suggestedWeightKg: suggestedWeightKg ?? self.suggestedWeightKg,
+            actualSeconds: actualSeconds ?? self.actualSeconds,
+            suggestedSeconds: suggestedSeconds ?? self.suggestedSeconds
         )
     }
 
@@ -836,9 +848,12 @@ struct LoggedSet: Codable {
     let actualWeightKg: Double?
     let mode: Mode
     let restSeconds: Int?
+    let suggestedReps: Int?
+    let suggestedWeightKg: Double?
     let targetReps: Int?
     let weightKg: Double?
     let actualSeconds: Int?
+    let suggestedSeconds: Int?
     let targetSeconds: Int?
 
     enum CodingKeys: String, CodingKey {
@@ -846,9 +861,12 @@ struct LoggedSet: Codable {
         case actualWeightKg = "actualWeightKg"
         case mode = "mode"
         case restSeconds = "restSeconds"
+        case suggestedReps = "suggestedReps"
+        case suggestedWeightKg = "suggestedWeightKg"
         case targetReps = "targetReps"
         case weightKg = "weightKg"
         case actualSeconds = "actualSeconds"
+        case suggestedSeconds = "suggestedSeconds"
         case targetSeconds = "targetSeconds"
     }
 }
@@ -876,9 +894,12 @@ extension LoggedSet {
         actualWeightKg: Double?? = nil,
         mode: Mode? = nil,
         restSeconds: Int?? = nil,
+        suggestedReps: Int?? = nil,
+        suggestedWeightKg: Double?? = nil,
         targetReps: Int?? = nil,
         weightKg: Double?? = nil,
         actualSeconds: Int?? = nil,
+        suggestedSeconds: Int?? = nil,
         targetSeconds: Int?? = nil
     ) -> LoggedSet {
         return LoggedSet(
@@ -886,9 +907,12 @@ extension LoggedSet {
             actualWeightKg: actualWeightKg ?? self.actualWeightKg,
             mode: mode ?? self.mode,
             restSeconds: restSeconds ?? self.restSeconds,
+            suggestedReps: suggestedReps ?? self.suggestedReps,
+            suggestedWeightKg: suggestedWeightKg ?? self.suggestedWeightKg,
             targetReps: targetReps ?? self.targetReps,
             weightKg: weightKg ?? self.weightKg,
             actualSeconds: actualSeconds ?? self.actualSeconds,
+            suggestedSeconds: suggestedSeconds ?? self.suggestedSeconds,
             targetSeconds: targetSeconds ?? self.targetSeconds
         )
     }

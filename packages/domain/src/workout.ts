@@ -7,7 +7,11 @@ import { SupersetMemberSetSchema } from './set.js';
 /** ISO 8601 timestamp with a UTC offset (ADR 0039). */
 const IsoOffsetSchema = z.iso.datetime({ offset: true });
 
-/** Logged standalone Set: template (mode/target/starting weight/rest) + nullable actuals (ADR 0039). */
+/**
+ * Logged standalone Set: template (mode/target/starting weight/rest), nullable actuals
+ * (ADR 0039), and optional suggestions prefilled from a previous Workout (ADR 0002).
+ * A suggestion is shown but never counts as logged until the Set is actually logged.
+ */
 export const LoggedSetSchema = z
   .discriminatedUnion('mode', [
     z.strictObject({
@@ -15,6 +19,8 @@ export const LoggedSetSchema = z
       targetReps: z.number().int().positive(),
       weightKg: WeightKgSchema,
       restSeconds: RestSecondsSchema,
+      suggestedReps: z.number().int().nonnegative().nullish(),
+      suggestedWeightKg: WeightKgSchema.optional(),
       actualReps: z.number().int().nonnegative().nullable(),
       actualWeightKg: WeightKgSchema,
     }),
@@ -23,6 +29,8 @@ export const LoggedSetSchema = z
       targetSeconds: z.number().int().positive(),
       weightKg: WeightKgSchema,
       restSeconds: RestSecondsSchema,
+      suggestedSeconds: z.number().int().nonnegative().nullish(),
+      suggestedWeightKg: WeightKgSchema.optional(),
       actualSeconds: z.number().int().nonnegative().nullable(),
       actualWeightKg: WeightKgSchema,
     }),
@@ -34,11 +42,15 @@ export const SupersetMemberActualSchema = z
   .discriminatedUnion('mode', [
     z.strictObject({
       mode: z.literal('reps'),
+      suggestedReps: z.number().int().nonnegative().nullish(),
+      suggestedWeightKg: WeightKgSchema.optional(),
       actualReps: z.number().int().nonnegative().nullable(),
       actualWeightKg: WeightKgSchema,
     }),
     z.strictObject({
       mode: z.literal('time'),
+      suggestedSeconds: z.number().int().nonnegative().nullish(),
+      suggestedWeightKg: WeightKgSchema.optional(),
       actualSeconds: z.number().int().nonnegative().nullable(),
       actualWeightKg: WeightKgSchema,
     }),

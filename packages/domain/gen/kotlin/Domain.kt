@@ -271,7 +271,10 @@ data class SupersetMemberActual (
     @get:JsonProperty(required=true)@field:JsonProperty(required=true)
     val mode: Mode,
 
-    val actualSeconds: Long? = null
+    val suggestedReps: Long? = null,
+    val suggestedWeightKg: Double? = null,
+    val actualSeconds: Long? = null,
+    val suggestedSeconds: Long? = null
 )
 
 sealed class Rounds {
@@ -300,9 +303,12 @@ data class LoggedSet (
     val mode: Mode,
 
     val restSeconds: Long? = null,
+    val suggestedReps: Long? = null,
+    val suggestedWeightKg: Double? = null,
     val targetReps: Long? = null,
     val weightKg: Double? = null,
     val actualSeconds: Long? = null,
+    val suggestedSeconds: Long? = null,
     val targetSeconds: Long? = null
 )
 

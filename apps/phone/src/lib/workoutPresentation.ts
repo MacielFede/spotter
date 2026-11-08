@@ -41,6 +41,8 @@ const loggedSetFromMember = (
       targetReps: member.set.targetReps,
       weightKg: member.set.weightKg,
       restSeconds,
+      suggestedReps: actual.suggestedReps,
+      suggestedWeightKg: actual.suggestedWeightKg,
       actualReps: actual.actualReps,
       actualWeightKg: actual.actualWeightKg,
     };
@@ -51,6 +53,8 @@ const loggedSetFromMember = (
       targetSeconds: member.set.targetSeconds,
       weightKg: member.set.weightKg,
       restSeconds,
+      suggestedSeconds: actual.suggestedSeconds,
+      suggestedWeightKg: actual.suggestedWeightKg,
       actualSeconds: actual.actualSeconds,
       actualWeightKg: actual.actualWeightKg,
     };
@@ -82,25 +86,41 @@ export const removeSupersetMember = (entry: SupersetEntry, memberIndex: number):
 };
 
 const completeLoggedSet = (set: LoggedSet, usesWeight: boolean): LoggedSet => {
-  const actualWeightKg = usesWeight ? (set.actualWeightKg ?? set.weightKg) : null;
+  const actualWeightKg = usesWeight
+    ? (set.actualWeightKg ?? set.suggestedWeightKg ?? set.weightKg)
+    : null;
   if (set.mode === 'reps') {
-    return { ...set, actualReps: set.actualReps ?? set.targetReps, actualWeightKg };
+    return {
+      ...set,
+      actualReps: set.actualReps ?? set.suggestedReps ?? set.targetReps,
+      actualWeightKg,
+    };
   }
-  return { ...set, actualSeconds: set.actualSeconds ?? set.targetSeconds, actualWeightKg };
+  return {
+    ...set,
+    actualSeconds: set.actualSeconds ?? set.suggestedSeconds ?? set.targetSeconds,
+    actualWeightKg,
+  };
 };
 
 const completeMemberActual = (
   member: SupersetMemberSnapshot,
   actual: SupersetMemberActual,
 ): SupersetMemberActual => {
-  const actualWeightKg = member.usesWeight ? (actual.actualWeightKg ?? member.set.weightKg) : null;
+  const actualWeightKg = member.usesWeight
+    ? (actual.actualWeightKg ?? actual.suggestedWeightKg ?? member.set.weightKg)
+    : null;
   if (actual.mode === 'reps' && member.set.mode === 'reps') {
-    return { ...actual, actualReps: actual.actualReps ?? member.set.targetReps, actualWeightKg };
+    return {
+      ...actual,
+      actualReps: actual.actualReps ?? actual.suggestedReps ?? member.set.targetReps,
+      actualWeightKg,
+    };
   }
   if (actual.mode === 'time' && member.set.mode === 'time') {
     return {
       ...actual,
-      actualSeconds: actual.actualSeconds ?? member.set.targetSeconds,
+      actualSeconds: actual.actualSeconds ?? actual.suggestedSeconds ?? member.set.targetSeconds,
       actualWeightKg,
     };
   }
@@ -191,7 +211,12 @@ export const isUnitComplete = (workout: Workout, unit: WorkoutUnit): boolean => 
 export const firstIncompleteUnit = (workout: Workout): WorkoutUnit | undefined =>
   workoutUnits(workout).find((unit) => !isUnitComplete(workout, unit));
 
-/** The next unfinished unit after `unit`, wrapping around; undefined when nothing is left. */
+/**
+ * The next unfinished unit after `unit`. A Superset member cycles through its own
+ * Superset first, wrapping from the last member back to the first, and only moves
+ * on to the next item once no member has an unlogged round left. `unit` itself is
+ * returned only when nothing else is left. Undefined when nothing is left at all.
+ */
 export const nextIncompleteUnit = (
   workout: Workout,
   unit: WorkoutUnit,
@@ -201,9 +226,14 @@ export const nextIncompleteUnit = (
     (candidate) =>
       candidate.entryIndex === unit.entryIndex && candidate.memberIndex === unit.memberIndex,
   );
-  for (let offset = 1; offset < units.length; offset++) {
-    const candidate = units[(index + offset) % units.length];
-    if (candidate && !isUnitComplete(workout, candidate)) return candidate;
-  }
-  return undefined;
+  const sameEntry = units.filter((candidate) => candidate.entryIndex === unit.entryIndex);
+  const position = sameEntry.findIndex((candidate) => candidate.memberIndex === unit.memberIndex);
+  const memberCycle =
+    unit.memberIndex === null
+      ? []
+      : [...sameEntry.slice(position + 1), ...sameEntry.slice(0, position + 1)];
+  const otherEntries = [...units.slice(index + 1), ...units.slice(0, index)].filter(
+    (candidate) => candidate.entryIndex !== unit.entryIndex,
+  );
+  return [...memberCycle, ...otherEntries].find((candidate) => !isUnitComplete(workout, candidate));
 };

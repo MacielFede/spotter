@@ -1,4 +1,4 @@
-import type { Set as DomainSet, Module, ModuleKind, Routine } from '@spotter/domain';
+import type { Set as DomainSet, Module, ModuleKind, Plan, Routine } from '@spotter/domain';
 
 export const MODULE_KINDS: ModuleKind[] = ['warmup', 'stretching', 'core', 'cardio'];
 
@@ -15,6 +15,28 @@ export const emptyRoutine = (id: string, name: string): Routine => ({
   name,
   active: false,
   modules: MODULE_KINDS.map((kind) => ({ kind, enabled: false, items: [] })),
+});
+
+/** Copy a Plan under fresh Plan and Routine ids while keeping Exercises shared. */
+export const duplicatePlan = (plan: Plan, createId: () => string): Plan => ({
+  ...plan,
+  id: createId(),
+  name: `Copy of ${plan.name}`,
+  routines: plan.routines.map((routine) => ({
+    ...routine,
+    id: createId(),
+    modules: routine.modules.map((module) => ({
+      ...module,
+      items: module.items.map((item) =>
+        item.kind === 'exercise'
+          ? { ...item, sets: item.sets.map((set) => ({ ...set })) }
+          : {
+              ...item,
+              members: item.members.map((member) => ({ ...member, set: { ...member.set } })),
+            },
+      ),
+    })),
+  })),
 });
 
 /** Ensure all four slots exist and are ordered, without dropping authored content. */

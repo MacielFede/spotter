@@ -137,8 +137,10 @@ describe('workout draft and prefill (issues #32, #34)', () => {
     const second = draft.exercises[1];
     const firstSet = first?.kind === 'exercise' ? first.sets[0] : undefined;
     const secondSet = second?.kind === 'exercise' ? second.sets[0] : undefined;
-    expect(firstSet?.mode === 'reps' ? firstSet.actualReps : null).toBe(8);
-    expect(secondSet?.mode === 'time' ? secondSet.actualSeconds : null).toBe(25);
+    expect(firstSet?.mode === 'reps' ? firstSet.suggestedReps : null).toBe(8);
+    expect(firstSet?.mode === 'reps' ? firstSet.actualReps : null).toBeNull();
+    expect(secondSet?.mode === 'time' ? secondSet.suggestedSeconds : null).toBe(25);
+    expect(secondSet?.mode === 'time' ? secondSet.actualSeconds : null).toBeNull();
   });
 
   it('does not carry historical kilograms into an unweighted snapshot', () => {
@@ -169,7 +171,8 @@ describe('workout draft and prefill (issues #32, #34)', () => {
     const firstSet = first?.kind === 'exercise' ? first.sets[0] : undefined;
 
     expect(first?.kind === 'exercise' ? first.usesWeight : true).toBe(false);
-    expect(firstSet?.mode === 'reps' ? firstSet.actualReps : null).toBe(8);
+    expect(firstSet?.mode === 'reps' ? firstSet.suggestedReps : null).toBe(8);
+    expect(firstSet?.suggestedWeightKg).toBeNull();
     expect(firstSet?.actualWeightKg).toBeNull();
   });
 
@@ -204,8 +207,10 @@ describe('workout draft and prefill (issues #32, #34)', () => {
     const draft = prefillFromHistory(buildWorkoutDraft({ ...base, history: [] }), [otherRoutine]);
     const first = draft.exercises[0];
     const firstSet = first?.kind === 'exercise' ? first.sets[0] : undefined;
-    expect(firstSet?.mode === 'reps' ? firstSet.actualReps : null).toBe(6);
-    expect(firstSet?.actualWeightKg).toBe(62.5);
+    expect(firstSet?.mode === 'reps' ? firstSet.suggestedReps : null).toBe(6);
+    expect(firstSet?.suggestedWeightKg).toBe(62.5);
+    expect(firstSet?.mode === 'reps' ? firstSet.actualReps : null).toBeNull();
+    expect(firstSet?.actualWeightKg).toBeNull();
   });
 
   it('formats ISO timestamps with an explicit offset', () => {

@@ -1,43 +1,43 @@
 import type { Plan, Routine } from '@spotter/domain';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { RoutineCard } from '@/components/plans/RoutineCard';
 import { Screen } from '@/components/Screen';
 import { Banner } from '@/components/ui/Banner';
 import { Chip } from '@/components/ui/Chip';
+import { PressableText } from '@/components/ui/PressableText';
+import { SectionHeader } from '@/components/ui/SectionHeader';
 import { db } from '@/db/client';
 import { listPlans } from '@/db/plans';
-import { loadWorkoutDraft, startWorkoutSession } from '@/db/workoutSession';
+import { cancelWorkoutSession, loadWorkoutDraft, startWorkoutSession } from '@/db/workoutSession';
 import { isRoutineStartable } from '@/lib/authoring';
 import { useTheme } from '@/theme/ThemeProvider';
-
-interface Entry {
-  plan: Plan;
-  routine: Routine;
-}
 
 export default function HomeScreen() {
   const { tokens } = useTheme();
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [filter, setFilter] = useState<string | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [hasDraft, setHasDraft] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      setPlans(listPlans(db));
+      const nextPlans = listPlans(db);
+      setPlans(nextPlans);
+      setSelectedPlanId((current) => {
+        if (current && nextPlans.some((plan) => plan.id === current)) return current;
+        return nextPlans[0]?.id ?? null;
+      });
       setHasDraft(loadWorkoutDraft() !== null);
     }, []),
   );
 
-  const entries: Entry[] = plans
-    .filter((plan) => filter === null || plan.id === filter)
-    .flatMap((plan) => plan.routines.map((routine) => ({ plan, routine })));
+  const selectedPlan = plans.find((plan) => plan.id === selectedPlanId);
 
   const start = (plan: Plan, routine: Routine) => {
-    if (loadWorkoutDraft()) {
-      router.push('/workout');
+    if (hasDraft || loadWorkoutDraft()) {
+      setHasDraft(true);
       return;
     }
     if (!isRoutineStartable(routine)) return;
@@ -45,47 +45,78 @@ export default function HomeScreen() {
     router.push('/workout');
   };
 
+  const cancelDraft = () => {
+    Alert.alert('Cancel workout?', 'The draft is discarded entirely.', [
+      { text: 'Keep editing', style: 'cancel' },
+      {
+        text: 'Discard',
+        style: 'destructive',
+        onPress: () => {
+          cancelWorkoutSession();
+          setHasDraft(false);
+        },
+      },
+    ]);
+  };
+
   return (
     <Screen>
-      <Text style={{ color: tokens.textSecondary }}>Every active Routine across your Plans.</Text>
-
       {hasDraft ? (
-        <Banner onPress={() => router.push('/workout')}>Workout in progress — continue</Banner>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Banner onPress={() => router.push('/workout')}>Workout in progress — continue</Banner>
+          </View>
+          <PressableText label="Cancel" tone="danger" onPress={cancelDraft} />
+        </View>
       ) : null}
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        <Chip label="All plans" selected={filter === null} onPress={() => setFilter(null)} />
-        {plans.map((plan) => (
-          <Chip
-            key={plan.id}
-            label={plan.name}
-            selected={filter === plan.id}
-            onPress={() => setFilter(plan.id)}
-          />
-        ))}
-      </View>
-
-      {entries.length === 0 ? (
-        <Text style={{ color: tokens.textSecondary }}>No Routines yet. Add one from Plans.</Text>
+      {plans.length === 0 ? (
+        <Text style={{ color: tokens.textSecondary }}>No Plans yet. Add one from Plans.</Text>
       ) : (
-        entries.map(({ plan, routine }) => {
-          const startable = isRoutineStartable(routine);
-          return (
-            <RoutineCard key={routine.id} title={routine.name} subtitle={plan.name}>
-              {!startable ? (
-                <Text style={{ color: tokens.textSecondary }}>
-                  {routine.active ? 'Empty — add items to start' : 'Inactive'}
-                </Text>
-              ) : (
-                <PrimaryButton
-                  label={hasDraft ? 'Continue workout' : 'Start workout'}
-                  onPress={() => start(plan, routine)}
-                />
-              )}
-            </RoutineCard>
-          );
-        })
+        <>
+          <SectionHeader
+            title="Plan"
+            supportingText={selectedPlan ? undefined : 'Select a Plan to see its Routines.'}
+          />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {plans.map((plan) => (
+              <Chip
+                key={plan.id}
+                label={plan.name}
+                selected={selectedPlanId === plan.id}
+                onPress={() => setSelectedPlanId(plan.id)}
+              />
+            ))}
+          </View>
+        </>
       )}
+
+      {selectedPlan ? (
+        selectedPlan.routines.length === 0 ? (
+          <Text style={{ color: tokens.textSecondary }}>
+            No Routines in this Plan yet. Add one from Plans.
+          </Text>
+        ) : (
+          selectedPlan.routines.map((routine) => {
+            const startable = isRoutineStartable(routine);
+            return (
+              <RoutineCard key={routine.id} title={routine.name} subtitle={selectedPlan.name}>
+                {!startable ? (
+                  <Text style={{ color: tokens.textSecondary }}>
+                    {routine.active ? 'Empty — add items to start' : 'Inactive'}
+                  </Text>
+                ) : (
+                  <PrimaryButton
+                    label="Start workout"
+                    disabled={hasDraft}
+                    onPress={() => start(selectedPlan, routine)}
+                  />
+                )}
+              </RoutineCard>
+            );
+          })
+        )
+      ) : null}
     </Screen>
   );
 }

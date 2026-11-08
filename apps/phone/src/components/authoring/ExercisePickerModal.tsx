@@ -1,10 +1,12 @@
 import { type Exercise, ExerciseSchema } from '@spotter/domain';
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Icon } from '@/components/ui/Icon';
 import { ListRow } from '@/components/ui/ListRow';
+import { Modal } from '@/components/ui/Modal';
 import { PressableText } from '@/components/ui/PressableText';
+import { useSnackbar } from '@/components/ui/SnackbarProvider';
 import { TextField } from '@/components/ui/TextField';
 import { db } from '@/db/client';
 import { findExerciseByTitle, listExercises, saveExercise } from '@/db/exercises';
@@ -32,7 +34,7 @@ export function ExercisePickerModal({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [usesWeight, setUsesWeight] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { showError } = useSnackbar();
 
   useEffect(() => {
     if (!visible) return;
@@ -41,7 +43,6 @@ export function ExercisePickerModal({
     setSelected([]);
     setCreating(false);
     setUsesWeight(true);
-    setError(null);
   }, [visible]);
 
   const filtered = exercises.filter((exercise) =>
@@ -62,12 +63,12 @@ export function ExercisePickerModal({
   const create = () => {
     const trimmed = title.trim();
     if (!trimmed) {
-      setError('Title cannot be blank.');
+      showError('Title cannot be blank.');
       return;
     }
     const duplicate = findExerciseByTitle(db, trimmed);
     if (duplicate) {
-      setError(`"${duplicate.title}" already exists.`);
+      showError(`"${duplicate.title}" already exists.`);
       return;
     }
     const exercise: Exercise = {
@@ -79,7 +80,7 @@ export function ExercisePickerModal({
     };
     const parsed = ExerciseSchema.safeParse(exercise);
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Exercise is not valid.');
+      showError(parsed.error.issues[0]?.message ?? 'Exercise is not valid.');
       return;
     }
     saveExercise(db, parsed.data);
@@ -88,7 +89,6 @@ export function ExercisePickerModal({
     setTitle('');
     setDescription('');
     setUsesWeight(true);
-    setError(null);
     choose(parsed.data.id);
   };
 
@@ -130,7 +130,6 @@ export function ExercisePickerModal({
                   />
                 }
               />
-              {error ? <Text style={{ color: tokens.danger }}>{error}</Text> : null}
               <PrimaryButton label="Create & choose" onPress={create} />
               <PressableText
                 label="Back to library"
