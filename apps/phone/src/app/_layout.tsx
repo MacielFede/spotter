@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SnackbarProvider } from '@/components/ui/SnackbarProvider';
 import { DatabaseGate } from '@/db/DatabaseGate';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
@@ -40,12 +41,14 @@ function ThemedApp() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <SnackbarProvider>
-        <DatabaseGate>
-          <ThemedApp />
-        </DatabaseGate>
-      </SnackbarProvider>
-    </ThemeProvider>
+    <KeyboardProvider>
+      <ThemeProvider>
+        <SnackbarProvider>
+          <DatabaseGate>
+            <ThemedApp />
+          </DatabaseGate>
+        </SnackbarProvider>
+      </ThemeProvider>
+    </KeyboardProvider>
   );
 }

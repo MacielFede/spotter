@@ -56,7 +56,7 @@ artifact remains; the platform stays in the domain model if it returns.)
 
 | App | Status | Run it |
 | --- | --- | --- |
-| **phone** (Expo + React Native, dev-client) | Scaffolded (#4) | `pnpm --filter phone start` (Metro); on-device dev build: `pnpm --filter phone run:ios --device` / `run:android --device` |
+| **phone** (Expo + React Native, dev-client) | Scaffolded (#4) | `pnpm --filter phone start` (Metro); on-device dev build (needs Metro): `pnpm --filter phone run:ios --device` / `run:android --device`; standalone Android APK: `run:android --variant release --device` (see [Installing on your devices](#installing-on-your-devices-and-keeping-it-installed)) |
 | **wearos** (Kotlin + Compose, Room) | Scaffolded (#6) | `apps/wearos/./gradlew :app:installDebug` (installs on the connected watch/emulator) |
 
 Build from the root: `pnpm build:phone` (Expo prebuild — generates `apps/phone/ios` +
@@ -81,8 +81,16 @@ Build from the root: `pnpm build:phone` (Expo prebuild — generates `apps/phone
 Spotter is local-first with **no cloud backup** (ADR 0047) — export/import is the backup
 story. To have the apps permanently on your devices:
 
-- **Android phone** — enable Developer options + USB debugging, then
-  `pnpm --filter phone run:android --device` (or `adb install` the built APK).
+- **Android phone** — enable Developer options + USB debugging, then build and
+  install a release APK. Release builds bundle the JavaScript into the APK, so the
+  app runs without USB or the Metro dev server:
+  ```sh
+  cd apps/phone/android && ./gradlew assembleRelease
+  adb install -r app/build/outputs/apk/release/app-release.apk
+  ```
+  Or in one step: `pnpm --filter phone run:android --variant release --device`.
+  The dev build (`run:android --device` without `--variant release`) still needs Metro
+  running and reachable, so use it only for development.
 - **Wear OS watch** — pair it, then either run from Android Studio with the Watch as
   the deployment target, or `adb -s <watch-serial> install
   apps/wearos/app/build/outputs/apk/debug/app-debug.apk`. Over Wi-Fi/Bluetooth:

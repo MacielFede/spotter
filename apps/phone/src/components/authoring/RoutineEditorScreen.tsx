@@ -13,6 +13,7 @@ import {
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { ExercisePickerModal } from '@/components/authoring/ExercisePickerModal';
 import { SetEditorModal } from '@/components/authoring/SetEditorModal';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -700,7 +701,7 @@ export default function RoutineEditorScreen() {
         animationType="fade"
         onRequestClose={() => setGroupFor(null)}
       >
-        <View style={styles.overlay}>
+        <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
           <View
             pointerEvents="none"
             style={[
@@ -768,7 +769,7 @@ export default function RoutineEditorScreen() {
             <PrimaryButton label="Create superset" onPress={confirmGroup} />
             <PressableText label="Cancel" onPress={() => setGroupFor(null)} tone="secondary" />
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </Screen>
   );

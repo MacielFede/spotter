@@ -7,6 +7,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { Screen } from '@/components/Screen';
 import { Card } from '@/components/ui/Card';
 import { ListRow } from '@/components/ui/ListRow';
+import { TextField } from '@/components/ui/TextField';
 import { db } from '@/db/client';
 import { listExercises } from '@/db/exercises';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -15,11 +16,17 @@ export default function ExercisesScreen() {
   const { tokens } = useTheme();
   const [includeArchived, setIncludeArchived] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [search, setSearch] = useState('');
 
   useFocusEffect(
     useCallback(() => {
       setExercises(listExercises(db, { includeArchived }));
     }, [includeArchived]),
+  );
+
+  const query = search.trim().toLocaleLowerCase();
+  const matches = exercises.filter((exercise) =>
+    exercise.title.toLocaleLowerCase().includes(query),
   );
 
   return (
@@ -41,14 +48,23 @@ export default function ExercisesScreen() {
         />
       </Card>
 
+      <TextField
+        accessibilityLabel="Search exercises"
+        onChangeText={setSearch}
+        placeholder="Search exercises"
+        value={search}
+      />
+
       {exercises.length === 0 ? (
         <Text style={{ color: tokens.textSecondary }}>
           {includeArchived
             ? 'No Exercises yet.'
             : 'No active Exercises. Create one to get started.'}
         </Text>
+      ) : matches.length === 0 ? (
+        <Text style={{ color: tokens.textSecondary }}>No Exercises match that search.</Text>
       ) : (
-        exercises.map((exercise) => (
+        matches.map((exercise) => (
           <ExerciseRow
             key={exercise.id}
             exercise={exercise}

@@ -1,6 +1,7 @@
 import { type Exercise, ExerciseSchema } from '@spotter/domain';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Icon } from '@/components/ui/Icon';
 import { ListRow } from '@/components/ui/ListRow';
@@ -94,7 +95,7 @@ export function ExercisePickerModal({
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
         <View
           pointerEvents="none"
           style={[StyleSheet.absoluteFill, { backgroundColor: tokens.textPrimary, opacity: 0.35 }]}
@@ -198,7 +199,7 @@ export function ExercisePickerModal({
             </>
           )}
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

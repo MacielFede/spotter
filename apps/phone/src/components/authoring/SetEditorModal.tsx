@@ -1,6 +1,7 @@
 import type { Set as DomainSet, SupersetMemberSet } from '@spotter/domain';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Chip } from '@/components/ui/Chip';
 import { Modal } from '@/components/ui/Modal';
@@ -93,7 +94,7 @@ export function SetEditorModal({
 
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
         <View
           pointerEvents="none"
           style={[StyleSheet.absoluteFill, { backgroundColor: tokens.textPrimary, opacity: 0.35 }]}
@@ -147,7 +148,7 @@ export function SetEditorModal({
           <PrimaryButton label="Done" onPress={save} />
           <PressableText label="Cancel" onPress={onClose} tone="secondary" />
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
